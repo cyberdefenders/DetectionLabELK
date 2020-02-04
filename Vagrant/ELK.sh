@@ -129,11 +129,11 @@ setup.kibana:
   host: "192.168.38.105:5601"
 setup.dashboards.enabled: true
 
-# output.elasticsearch:
-#   hosts: ["192.168.38.105:9200"]
+output.elasticsearch:
+  hosts: ["192.168.38.105:9200"]
 
-output.logstash:
-  hosts: ["192.168.38.105:5044"]
+# output.logstash:
+#   hosts: ["192.168.38.105:5044"]
 EOF
 
 cat >/etc/filebeat/modules.d/osquery.yml <<EOF
@@ -165,7 +165,7 @@ cat >/etc/filebeat/modules.d/zeek.yml <<EOF
     var.paths: ["/opt/zeek/logs/current/*.log"]
 EOF
 
-filebeat --path.config /etc/filebeat modules enable system
+# filebeat --path.config /etc/filebeat modules enable system
 filebeat --path.config /etc/filebeat modules enable suricata
 
 # make sure both of logstash and kibana are up
