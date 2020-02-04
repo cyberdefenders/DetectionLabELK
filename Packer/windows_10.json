@@ -31,7 +31,8 @@
         "./scripts/enable-winrm.ps1",
         "./scripts/microsoft-updates.bat",
         "./scripts/win-updates.ps1",
-        "./scripts/unattend.xml"
+        "./scripts/unattend.xml",
+        "./scripts/sysprep.bat"
       ],
       "vmx_data": {
         "RemoteDisplay.vnc.enabled": "false",
@@ -70,7 +71,8 @@
         "./scripts/enable-winrm.ps1",
         "./scripts/microsoft-updates.bat",
         "./scripts/win-updates.ps1",
-        "./scripts/unattend.xml"
+        "./scripts/unattend.xml",
+        "./scripts/sysprep.bat"
       ],
       "vboxmanage": [
         [
