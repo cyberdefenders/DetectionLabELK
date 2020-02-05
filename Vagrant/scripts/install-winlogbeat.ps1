@@ -52,6 +52,11 @@ If (-not ($service)) {
     - name: WEC6-Microsoft-Office
     - name: WEC6-Software-Restriction-Policies
     - name: WEC6-Sysmon
+      processors:
+        - script:
+          lang: javascript
+          id: sysmon
+          file: `${path.home}/module/sysmon/config/winlogbeat-sysmon.js
     - name: WEC7-Active-Directory
     - name: WEC7-Privilege-Use
     - name: WEC7-Terminal-Services
@@ -64,14 +69,13 @@ If (-not ($service)) {
 "@
   $confFile | Out-File -FilePath C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat.yml -Encoding ascii
 
-  winlogbeat --path.config C:\ProgramData\chocolatey\lib\winlogbeat\tools setup
+  winlogbeat --path.config C:\ProgramData\chocolatey\lib\winlogbeat\tools setup --dashboards
 
   Start-Service winlogbeat
 }
 else {
   Write-Host "winlogbeat is already configured. Moving On."
 }
-If ((Get-Service -name winlogbeat).Status -ne "Running")
-{
+If ((Get-Service -name winlogbeat).Status -ne "Running") {
   throw "winlogbeat service was not running"
 }
