@@ -45,6 +45,7 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 1.  **VirtualBox**
     * [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
     * Download DetectionLabELK to your local machine by running `git clone https://gitlab.com/cyberdefenders/detectionlabelk` from command line OR get it directly via [this link](https://gitlab.com/CyberDefenders/detectionlab-elk/-/archive/master/detectionlabelk-master.zip).
+    * `cd` to the Packer directory and build the Windows 10 and Windows Server 2016 boxes by executing `$ packer build --only=                     [vmware|virtualbox]-iso windows_10.json` and `$ packer build --only=[vmware|virtualbox]-iso windows_2016.json`
     * `cd` into the Vagrant directory: `cd ../Vagrant` and edit the `Vagrantfile`. Change the lines `cfg.vm.box = "detectionlab/win2016"` and `cfg.vm.box = "detectionlab/win10` to `cfg.vm.box = "../Boxes/windows_2016_<provider>.box"` and "`cfg.vm.box = "../Boxes/windows_10_<provider>.box"` respectively.
     * Install the Vagrant-Reload plugin: `vagrant plugin install vagrant-reload`.
     * Ensure you are in the base DetectionLabELK folder and run `./build.sh` (Mac & Linux) or `./build.ps1` (Windows).
