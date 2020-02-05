@@ -44,9 +44,10 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 ### First Option: Local Deployment (using Vagrant) - ETA 90-120 minutes.
 1.  **VirtualBox**
     * [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
-    * Download DetectionLabELK to your local machine by running `git clone https://gitlab.com/cyberdefenders/detectionlabelk` from command line OR get it directly via [this link](https://gitlab.com/CyberDefenders/detectionlab-elk/-/archive/master/detectionlabelk-master.zip).
-    * `cd` to the Packer directory and build the Windows 10 and Windows Server 2016 boxes by executing `$ packer build --only=                     [vmware|virtualbox]-iso windows_10.json` and `$ packer build --only=[vmware|virtualbox]-iso windows_2016.json`
-    * `cd` into the Vagrant directory: `cd ../Vagrant` and edit the `Vagrantfile`. Change the lines `cfg.vm.box = "detectionlab/win2016"` and `cfg.vm.box = "detectionlab/win10` to `cfg.vm.box = "../Boxes/windows_2016_<provider>.box"` and "`cfg.vm.box = "../Boxes/windows_10_<provider>.box"` respectively.
+	 * [Install Packer](https://packer.io/downloads.html) on your system.
+    * Download DetectionLabELK to your local machine by running `git clone https://github.com/cydefenders/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/CyDefenders/DetectionLabELK/archive/master.zip).
+    * `cd` to the Packer directory and build the Windows 10 and Windows Server 2016 boxes by executing `packer build --only=[vmware|virtualbox]-iso windows_10.json` and `packer build --only=[vmware|virtualbox]-iso windows_2016.json`
+    * `cd` into the Vagrant directory: `cd ../Vagrant` and edit the `Vagrantfile`. Change the lines `cfg.vm.box = "detectionlabelk/win2016"` and `cfg.vm.box = "detectionlabelk/win10` to `cfg.vm.box = "../Boxes/windows_2016_<provider>.box"` and "`cfg.vm.box = "../Boxes/windows_10_<provider>.box"` respectively.
     * Install the Vagrant-Reload plugin: `vagrant plugin install vagrant-reload`.
     * Ensure you are in the base DetectionLabELK folder and run `./build.sh` (Mac & Linux) or `./build.ps1` (Windows).
     * Navigate to https://192.168.38.105:5601 in a browser to access the Kibana dashboard on logger.
@@ -54,8 +55,10 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 
 2.  **VMware Workstation & Fusion** [Requires VMware plugin $80](https://www.vagrantup.com/vmware/#buy-now)
     * [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
-    * Download DetectionLabELK to your local machine by running `git clone https://gitlab.com/cyberdefenders/detectionlabelk` from command line OR get it directly via [this link](https://gitlab.com/CyberDefenders/detectionlab-elk/-/archive/master/detectionlabelk-master.zip).
-    * `cd` into the Vagrant directory: `cd ../Vagrant` and edit the `Vagrantfile`. Change the lines `cfg.vm.box = "detectionlab/win2016"` and `cfg.vm.box = "detectionlab/win10` to `cfg.vm.box = "../Boxes/windows_2016_<provider>.box"` and "`cfg.vm.box = "../Boxes/windows_10_<provider>.box"` respectively.
+	 * [Install Packer](https://packer.io/downloads.html) on your system.
+    * Download DetectionLabELK to your local machine by running `git clone https://github.com/cydefenders/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/CyDefenders/DetectionLabELK/archive/master.zip).
+    * `cd` to the Packer directory and build the Windows 10 and Windows Server 2016 boxes by executing `packer build --only=[vmware|virtualbox]-iso windows_10.json` and `packer build --only=[vmware|virtualbox]-iso windows_2016.json`
+    * `cd` into the Vagrant directory: `cd ../Vagrant` and edit the `Vagrantfile`. Change the lines `cfg.vm.box = "detectionlabelk/win2016"` and `cfg.vm.box = "detectionlabelk/win10` to `cfg.vm.box = "../Boxes/windows_2016_<provider>.box"` and "`cfg.vm.box = "../Boxes/windows_10_<provider>.box"` respectively.
     * Install the Vagrant-Reload plugin: `vagrant plugin install vagrant-reload`.
     * [Buy a license](https://www.vagrantup.com/vmware/index.html#buy-now) for the VMware plugin
     * Install it with `vagrant plugin install vagrant-vmware-desktop`.
