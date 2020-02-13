@@ -63,13 +63,14 @@ If (-not ($service)) {
 
   setup.kibana:
     host: "192.168.38.105:5601"
+  setup.dashboards.enabled: true
 
   output.elasticsearch:
     hosts: ["192.168.38.105:9200"]
 "@
   $confFile | Out-File -FilePath C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat.yml -Encoding ascii
 
-  winlogbeat --path.config C:\ProgramData\chocolatey\lib\winlogbeat\tools setup --dashboards
+  winlogbeat --path.config C:\ProgramData\chocolatey\lib\winlogbeat\tools setup
 
   Start-Service winlogbeat
 }
