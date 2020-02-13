@@ -52,12 +52,18 @@ If (-not ($service)) {
     - name: WEC6-Microsoft-Office
     - name: WEC6-Software-Restriction-Policies
     - name: WEC6-Sysmon
+      processors:
+        - script:
+          lang: javascript
+          id: sysmon
+          file: `${path.home}/module/sysmon/config/winlogbeat-sysmon.js
     - name: WEC7-Active-Directory
     - name: WEC7-Privilege-Use
     - name: WEC7-Terminal-Services
 
   setup.kibana:
     host: "192.168.38.105:5601"
+  setup.dashboards.enabled: true
 
   output.elasticsearch:
     hosts: ["192.168.38.105:9200"]
@@ -71,7 +77,6 @@ If (-not ($service)) {
 else {
   Write-Host "winlogbeat is already configured. Moving On."
 }
-If ((Get-Service -name winlogbeat).Status -ne "Running")
-{
+If ((Get-Service -name winlogbeat).Status -ne "Running") {
   throw "winlogbeat service was not running"
 }
