@@ -40,7 +40,7 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 
 
 ## Deployment Options
-### First Option: Local Deployment (using Vagrant) - ETA 90-120 minutes.
+### Local Deployment (using Vagrant) - ETA 90-120 minutes.
 1.  **VirtualBox**
     * [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
 	 * [Install Packer](https://packer.io/downloads.html) on your system.
@@ -68,10 +68,3 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
     * Navigate to https://192.168.38.105:8412 in a browser to access the Fleet server on logger. Default credentials are admin:admin123#.
 
 **Note**: Deployment logs will be present in the `Vagrant` folder as `vagrant_up_<host>.log`
-
-
-
-### Second Option: Cloud Deployment (using Terraform) - ETA 30 minutes.
-
-
-
