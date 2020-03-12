@@ -4,7 +4,7 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 
 
 ![Maintenance](https://img.shields.io/maintenance/yes/2020.svg?style=flat-square)
-[![GitHub last commit](https://img.shields.io/github/last-commit/cydefenders/DetectionLabELK.svg?style=flat-square)](https://github.com/cydefenders/DetectionLabELK/commit/master)
+[![GitHub last commit](https://img.shields.io/github/last-commit/cyberdefenders/DetectionLabELK.svg?style=flat-square)](https://github.com/cyberdefenders/DetectionLabELK/commit/master)
 [![Twitter](https://img.shields.io/twitter/follow/DetectionLab.svg?style=social)](https://twitter.com/DetectionLab)
 [![Twitter](https://img.shields.io/twitter/follow/CyberDefenders?style=social)](https://twitter.com/CyberDefenders)
 
