@@ -83,6 +83,12 @@ fix_eth1_static_ip() {
       exit 1
     fi
   fi
+
+  # Make sure we do have a DNS resolution
+  while true; do
+    if [ "$(dig +short @8.8.8.8 github.com)" ]; then break; fi
+    sleep 1
+  done
 }
 
 install_splunk() {
