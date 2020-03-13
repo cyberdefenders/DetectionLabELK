@@ -14,7 +14,7 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 * **Domain Name**: windomain.local
 * **Windows Admininstrator login**: vagrant:vagrant
 * **Fleet login**: https://192.168.38.105:8412 - admin:admin123#
-* **Kibana login**: https://192.168.38.105:5601
+* **Kibana login**: http://192.168.38.105:5601
 * **Microsoft ATA login**: https://192.168.38.103 - wef\vagrant:vagrant
 * **Guacamole login**: http://192.168.38.105:8080/guacamole - vagrant:vagrant
 
