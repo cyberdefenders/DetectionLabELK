@@ -1,10 +1,10 @@
 #! /bin/bash
 
 export DEBIAN_FRONTEND=noninteractive
-# echo "apt-fast apt-fast/maxdownloads string 10" | debconf-set-selections;
-# echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections;
+echo "apt-fast apt-fast/maxdownloads string 10" | debconf-set-selections
+echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections
 
-# sed -i "2ideb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse" /etc/apt/sources.list
+sed -i "2ideb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse" /etc/apt/sources.list
 
 apt_install_prerequisites() {
   echo "[$(date +%H:%M:%S)]: Adding apt repositories..."
@@ -19,9 +19,9 @@ apt_install_prerequisites() {
   apt-get clean
   echo "[$(date +%H:%M:%S)]: Running apt-get update..."
   apt-get -qq update
-  # apt-get -qq install -y apt-fast
+  apt-get -qq install -y apt-fast
   echo "[$(date +%H:%M:%S)]: Running apt-fast install..."
-  apt-get install -y jq whois build-essential git docker docker-compose unzip htop yq
+  apt-fast -qq install -y jq whois build-essential git docker docker-compose unzip htop yq
 }
 
 modify_motd() {
@@ -56,6 +56,11 @@ test_prerequisites() {
 }
 
 fix_eth1_static_ip() {
+  USING_KVM=$(sudo lsmod | grep kvm)
+  if [ ! -z "$USING_KVM" ]; then
+    echo "[*] Using KVM, no need to fix DHCP for eth1 iface"
+    return 0
+  fi
   # There's a fun issue where dhclient keeps messing with eth1 despite the fact
   # that eth1 has a static IP set. We workaround this by setting a static DHCP lease.
   echo -e 'interface "eth1" {
@@ -78,6 +83,12 @@ fix_eth1_static_ip() {
       exit 1
     fi
   fi
+
+  # Make sure we do have a DNS resolution
+  while true; do
+    if [ "$(dig +short @8.8.8.8 github.com)" ]; then break; fi
+    sleep 1
+  done
 }
 
 install_splunk() {
@@ -89,6 +100,7 @@ install_splunk() {
     # Get download.splunk.com into the DNS cache. Sometimes resolution randomly fails during wget below
     dig @8.8.8.8 download.splunk.com >/dev/null
     dig @8.8.8.8 splunk.com >/dev/null
+    dig @8.8.8.8 www.splunk.com >/dev/null
 
     # Try to resolve the latest version of Splunk by parsing the HTML on the downloads page
     echo "[$(date +%H:%M:%S)]: Attempting to autoresolve the latest version of Splunk..."
@@ -101,7 +113,7 @@ install_splunk() {
     else
       echo "[$(date +%H:%M:%S)]: Unable to auto-resolve the latest Splunk version. Falling back to hardcoded URL..."
       # Download Hardcoded Splunk
-      wget --progress=bar:force -O splunk/splunk-7.2.6-c0bf0f679ce9-linux-2.6-amd64.deb 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.2.6&product=splunk&filename=splunk-7.2.6-c0bf0f679ce9-linux-2.6-amd64.deb&wget=true'
+      wget --progress=bar:force -O /opt/splunk-8.0.2-a7f645ddaf91-linux-2.6-amd64.deb 'https://download.splunk.com/products/splunk/releases/8.0.2/linux/splunk-8.0.2-a7f645ddaf91-linux-2.6-amd64.deb&wget=true'
     fi
     dpkg -i /opt/splunk*.deb
     /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd changeme
@@ -230,8 +242,6 @@ install_fleet() {
     echo "[$(date +%H:%M:%S)]: Installing Fleet..."
     echo -e "\n127.0.0.1       kolide" >>/etc/hosts
     echo -e "\n127.0.0.1       logger" >>/etc/hosts
-    git config --global http.lowSpeedLimit 1000
-    git config --global http.lowSpeedTime 600
     cd /opt && git clone https://github.com/kolide/kolide-quickstart.git
     cd /opt/kolide-quickstart || echo "Something went wrong while trying to clone the kolide-quickstart repository"
     cp /vagrant/resources/fleet/server.* .
@@ -356,16 +366,16 @@ install_zeek() {
   # mkdir -p $SPLUNK_ZEEK_JSON/local
   # cp $SPLUNK_ZEEK_JSON/default/inputs.conf $SPLUNK_ZEEK_JSON/local/inputs.conf
 
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR index   zeek
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR sourcetype   bro:json
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR whitelist   '.*\.log$'
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR blacklist   '.*(communication|stderr)\.log$'
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR disabled   0
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR index   suricata
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR sourcetype   suricata:json
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR whitelist   'eve.json'
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR disabled   0
-  # crudini --set  $SPLUNK_ZEEK_JSON/local/props.conf  $SPLUNK_SURICATA_SOURCETYPE TRUNCATE    0
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR index zeek
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR sourcetype bro:json
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR whitelist '.*\.log$'
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR blacklist '.*(communication|stderr)\.log$'
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_ZEEK_MONITOR disabled 0
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR index suricata
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR sourcetype suricata:json
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR whitelist 'eve.json'
+  # crudini --set $SPLUNK_ZEEK_JSON/local/inputs.conf $SPLUNK_SURICATA_MONITOR disabled 0
+  # crudini --set $SPLUNK_ZEEK_JSON/local/props.conf $SPLUNK_SURICATA_SOURCETYPE TRUNCATE 0
 
   # Ensure permissions are correct and restart splunk
   # chown -R splunk $SPLUNK_ZEEK_JSON
@@ -379,7 +389,7 @@ install_zeek() {
 }
 
 install_suricata() {
-  # Run iwr -Uri testmyids.com -UserAgent "BlackSun" in Powershell to generate test alerts
+  # Run iwr -Uri testmyids.com -UserAgent "BlackSun" in Powershell to generate test alerts from Windows
   echo "[$(date +%H:%M:%S)]: Installing Suricata..."
 
   # Install suricata
@@ -390,32 +400,8 @@ install_suricata() {
   git clone https://github.com/OISF/suricata-update.git
   cd /opt/suricata-update || exit 1
   python setup.py install
-  # Add DC_SERVERS variable to suricata.yaml in support et-open signatures
-  yq w -i /etc/suricata/suricata.yaml vars.address-groups.DC_SERVERS '$HOME_NET'
 
-  # It may make sense to store the suricata.yaml file as a resource file if this begins to become too complex
-  # Add more verbose alert logging
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.payload true
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.payload-buffer-size 4kb
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.payload-printable yes
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.packet yes
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.http yes
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.tls yes
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.ssh yes
-  yq w -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.0.alert.smtp yes
-  # Turn off traffic flow logging (duplicative of Zeek and wrecks Splunk trial license)
-  yq d -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.1 # Remove HTTP
-  yq d -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.1 # Remove DNS
-  yq d -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.1 # Remove TLS
-  yq d -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.2 # Remove SMTP
-  yq d -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.2 # Remove SSH
-  yq d -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.2 # Remove Stats
-  yq d -i /etc/suricata/suricata.yaml outputs.1.eve-log.types.2 # Remove Flow
-  # Enable JA3 fingerprinting
-  yq w -i /etc/suricata/suricata.yaml app-layer.protocols.tls.ja3-fingerprints true
-  # AF packet monitoring should be set to eth1
-  yq w -i /etc/suricata/suricata.yaml af-packet.0.interface eth1
-
+  cp /vagrant/resources/suricata/suricata.yaml /etc/suricata/suricata.yaml
   crudini --set --format=sh /etc/default/suricata '' iface eth1
   # update suricata signature sources
   suricata-update update-sources
@@ -424,9 +410,6 @@ install_suricata() {
   # enable et-open and attackdetection sources
   suricata-update enable-source et/open
   suricata-update enable-source ptresearch/attackdetection
-  # Add the YAML header to the top of the suricata config
-  echo "Adding the YAML header to /etc/suricata/suricata.yaml"
-  echo -e "%YAML 1.1\n---\n$(cat /etc/suricata/suricata.yaml)" >/etc/suricata/suricata.yaml
 
   # Update suricata and restart
   suricata-update
@@ -494,7 +477,7 @@ main() {
   apt_install_prerequisites
   modify_motd
   test_prerequisites
-  # fix_eth1_static_ip
+  fix_eth1_static_ip
   # install_splunk
   install_fleet
   download_palantir_osquery_config

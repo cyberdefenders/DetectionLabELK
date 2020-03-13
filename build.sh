@@ -88,8 +88,6 @@ check_vmware_desktop_vagrant_plugin_installed() {
   fi
 }
 
-
-
 # List the available Vagrant providers present on the system
 list_providers() {
   VBOX_PRESENT=0
@@ -180,7 +178,7 @@ check_disk_free_space() {
 }
 
 # Check to see if curl is in PATH - needed for post-install checks
-check_curl(){
+check_curl() {
   if ! which curl >/dev/null; then
     (echo >&2 "Please install curl and make sure it is in your PATH.")
     exit 1
@@ -244,7 +242,7 @@ vagrant_up_host() {
   HOST="$1"
   (echo >&2 "Attempting to bring up the $HOST host using Vagrant")
   cd "$DL_DIR"/Vagrant || exit 1
-  $(which vagrant) up "$HOST" --provider="$PROVIDER" &> "$DL_DIR/Vagrant/vagrant_up_$HOST.log"
+  $(which vagrant) up "$HOST" --provider="$PROVIDER" &>"$DL_DIR/Vagrant/vagrant_up_$HOST.log"
   echo "$?"
 }
 
@@ -261,7 +259,7 @@ vagrant_reload_host() {
 post_build_checks() {
   # If the curl operation fails, we'll just leave the variable equal to 0
   # This is needed to prevent the script from exiting if the curl operation fails
-  SPLUNK_CHECK=$(curl -ks -m 2 https://192.168.38.105:8000/en-US/account/login?return_to=%2Fen-US%2F | grep -c 'This browser is not supported by Splunk' || echo "")
+  KIBANA_CHECK=$(curl -ks -m 2 http://192.168.38.105:5601/api/status | grep -q logger || echo "")
   FLEET_CHECK=$(curl -ks -m 2 https://192.168.38.105:8412 | grep -c 'Kolide Fleet' || echo "")
   ATA_CHECK=$(curl --fail --write-out "%{http_code}" -ks https://192.168.38.103 -m 2)
   [[ $ATA_CHECK == 401 ]] && ATA_CHECK=1
@@ -270,15 +268,15 @@ post_build_checks() {
   # Associative arrays are only supported in bash 4 and up
   if [ "$BASH_MAJOR_VERSION" -ge 4 ]; then
     declare -A SERVICES
-    SERVICES=(["splunk"]="$SPLUNK_CHECK" ["fleet"]="$FLEET_CHECK" ["ms_ata"]="$ATA_CHECK")
+    SERVICES=(["kibana"]="$KIBANA_CHECK" ["fleet"]="$FLEET_CHECK" ["ms_ata"]="$ATA_CHECK")
     for SERVICE in "${!SERVICES[@]}"; do
       if [ "${SERVICES[$SERVICE]}" -lt 1 ]; then
         (echo >&2 "Warning: $SERVICE failed post-build tests and may not be functioning correctly.")
       fi
     done
   else
-    if [ "$SPLUNK_CHECK" -lt 1 ]; then
-      (echo >&2 "Warning: Splunk failed post-build tests and may not be functioning correctly.")
+    if [ "$KIBANA_CHECK" -lt 1 ]; then
+      (echo >&2 "Warning: Kibana failed post-build tests and may not be functioning correctly.")
     fi
     if [ "$FLEET_CHECK" -lt 1 ]; then
       (echo >&2 "Warning: Fleet failed post-build tests and may not be functioning correctly.")
@@ -303,15 +301,15 @@ parse_cli_arguments() {
     # If the user specifies the provider as an agument, set the variable
     # TODO: Check to make sure they actually have their provider installed
     case "$1" in
-      virtualbox)
+    virtualbox)
       PROVIDER="$1"
       PACKER_PROVIDER="$1"
       ;;
-      vmware_desktop)
+    vmware_desktop)
       PROVIDER="$1"
       PACKER_PROVIDER="vmware"
       ;;
-      *)
+    *)
       echo "\"$1\" is not a valid provider. Listing available providers:"
       PROVIDER=$(list_providers)
       ;;
@@ -319,13 +317,13 @@ parse_cli_arguments() {
   fi
   if [ $# -eq 2 ]; then
     case "$2" in
-      --packer-only)
+    --packer-only)
       PACKER_ONLY=1
       ;;
-      --vagrant-only)
+    --vagrant-only)
       VAGRANT_ONLY=1
       ;;
-      *)
+    *)
       echo -e "\"$2\" is not recognized as an option. Available options are:\\n--packer-only\\n--vagrant-only"
       exit 1
       ;;
@@ -336,38 +334,38 @@ parse_cli_arguments() {
 build_packer_boxes() {
   PACKER_BOXES=("windows_2016" "windows_10")
 
-  if [ "$(hostname)" == "packerwindows10" ]; then   # Workaround for CI environment
-  (echo >&2 "CI Environment detected. If you are a user and are seeing this, please file an issue on GitHub.")
-  RET=$(packer_build_box "windows_10")
-  if [ "$RET" -eq 0 ]; then
-    (echo >&2 "Good news! The windows_10 box was built with Packer successfully!")
+  if [ "$(hostname)" == "packerwindows10" ]; then # Workaround for CI environment
+    (echo >&2 "CI Environment detected. If you are a user and are seeing this, please file an issue on GitHub.")
+    RET=$(packer_build_box "windows_10")
+    if [ "$RET" -eq 0 ]; then
+      (echo >&2 "Good news! The windows_10 box was built with Packer successfully!")
+    else
+      (echo >&2 "Something went wrong while attempting to build the windows_10 box.")
+      (echo >&2 "To file an issue, please visit https://github.com/clong/DetectionLab/issues/")
+      exit 1
+    fi
+  elif [ "$(hostname)" == "packerwindows2016" ]; then # Workaround for CI environment
+    (echo >&2 "CI Environment detected. If you are a user and are seeing this, please file an issue on GitHub.")
+    RET=$(packer_build_box "windows_2016")
+    if [ "$RET" -eq 0 ]; then
+      (echo >&2 "Good news! The windows_2016 box was built with Packer successfully!")
+    else
+      (echo >&2 "Something went wrong while attempting to build the windows_2016 box.")
+      (echo >&2 "To file an issue, please visit https://github.com/clong/DetectionLab/issues/")
+      exit 1
+    fi
   else
-    (echo >&2 "Something went wrong while attempting to build the windows_10 box.")
-    (echo >&2 "To file an issue, please visit https://github.com/clong/DetectionLab/issues/")
-    exit 1
+    for PACKER_BOX in "${PACKER_BOXES[@]}"; do # Normal user workflow
+      RET=$(packer_build_box "$PACKER_BOX")
+      if [ "$RET" -eq 0 ]; then
+        (echo >&2 "Good news! $PACKER_BOX was built successfully!")
+      else
+        (echo >&2 "Something went wrong while attempting to build the $PACKER_BOX box.")
+        (echo >&2 "To file an issue, please visit https://github.com/clong/DetectionLab/issues/")
+        exit 1
+      fi
+    done
   fi
-elif [ "$(hostname)" == "packerwindows2016" ]; then  # Workaround for CI environment
-(echo >&2 "CI Environment detected. If you are a user and are seeing this, please file an issue on GitHub.")
-RET=$(packer_build_box "windows_2016")
-if [ "$RET" -eq 0 ]; then
-  (echo >&2 "Good news! The windows_2016 box was built with Packer successfully!")
-else
-  (echo >&2 "Something went wrong while attempting to build the windows_2016 box.")
-  (echo >&2 "To file an issue, please visit https://github.com/clong/DetectionLab/issues/")
-  exit 1
-fi
-else
-  for PACKER_BOX in "${PACKER_BOXES[@]}"; do  # Normal user workflow
-  RET=$(packer_build_box "$PACKER_BOX")
-  if [ "$RET" -eq 0 ]; then
-    (echo >&2 "Good news! $PACKER_BOX was built successfully!")
-  else
-    (echo >&2 "Something went wrong while attempting to build the $PACKER_BOX box.")
-    (echo >&2 "To file an issue, please visit https://github.com/clong/DetectionLab/issues/")
-    exit 1
-  fi
-done
-fi
 }
 
 build_vagrant_hosts() {
