@@ -7,6 +7,7 @@ If ($hostname -eq "win10") {
   # Adding Defender exclusions just in case
   Set-MpPreference -ExclusionPath "C:\Tools"
   Add-MpPreference -ExclusionPath "C:\Users\vagrant\AppData\Local\Temp"
+  Add-MpPreference -DisableRealtimeMonitoring $true
 }
 
 # Purpose: Downloads and unzips a copy of the latest Mimikatz trunk
