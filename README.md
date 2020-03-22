@@ -9,8 +9,7 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 [![Twitter](https://img.shields.io/twitter/follow/CyberDefenders?style=social)](https://twitter.com/CyberDefenders)
 
 
-## Lab Information
-
+## Lab Information:
 * **Domain Name**: windomain.local
 * **Windows Admininstrator login**: vagrant:vagrant
 * **Fleet login**: https://192.168.38.105:8412 - admin:admin123#
@@ -35,43 +34,35 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 * 55GB+ of free disk space
 * 16GB+ of RAM
 * Vagrant 2.2.2 or newer
-* Virtualbox or VMWare Fusion/Workstation
+* Virtualbox
 
 
 
 ## Deployment Options
-### Local Deployment (using Vagrant) - ETA 90-120 minutes.
-1.  **VirtualBox**
+1.  **Use Vagrant Cloud Boxes - ETA ~2 hours**.
     * [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
     * [Install Packer](https://packer.io/downloads.html) on your system.
     * Install the Vagrant-Reload plugin by running the following command: `vagrant plugin install vagrant-reload`.
+    * Download DetectionLabELK to your local machine by running `git clone https://github.com/cyberdefenders/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/cyberdefenders/DetectionLabELK/archive/master.zip).
+    * `cd` to "DetectionLabELK/Vagrant" and execute `vagrant up`.
+
+2.  **Build Boxes From Scratch - ETA ~5 hours**. 
+    * [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
+    * [Install Packer](https://packer.io/downloads.html) on your system.
+    * Install "Vagrant-Reload" plugin by running the following command: `vagrant plugin install vagrant-reload`.
     * Download DetectionLabELK to your local machine by running `git clone https://github.com/cyberdefenders/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/cyberdefenders/DetectionLabELK/archive/master.zip).
     * `cd` to "DetectionLabELK" base directory and build the lab by executing `./build.sh virtualbox` (Mac & Linux) or `./build.ps1 virtualbox` (Windows).
-     * Once finished, ensure you are in `DetectionLabELK/Vagrant` directory and run `vagrant status`. The four machines (wef,dc,logger and win10) should be running. if one of the machines was not running, execute `vagrant reload <host>`. If you would like to pause the whole lab, execute `vagrant suspend` and resume it using `vagrant resume`.
-    * Deployment logs will be present in the `Vagrant` folder as `vagrant_up_<host>.log`
-    * Navigate to https://192.168.38.105:5601 in a browser to access the Kibana dashboard on logger.
-    * Navigate to https://192.168.38.105:8412 in a browser to access the Fleet server on logger. Default credentials are admin:admin123#.
-    * Navigate to https://192.168.38.105:8080/guacamole in a browser to access Guacamole. Default credentials are vagrant:vagrant.
+    
+    
+## Troubleshooting:    
+* To verify that building process completed successfully, ensure you are in `DetectionLabELK/Vagrant` directory and run `vagrant status`. The four machines (wef,dc,logger and win10) should be running. if one of the machines was not running, execute `vagrant reload <host>`. If you would like to pause the whole lab, execute `vagrant suspend` and resume it using `vagrant resume`.
+* Deployment logs will be present in the `Vagrant` folder as `vagrant_up_<host>.log`
 
 
-
-2.  **VMware Workstation & Fusion** [Requires VMware plugin $80](https://www.vagrantup.com/vmware/#buy-now)
-    * [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
-    * [Install Packer](https://packer.io/downloads.html) on your system.
-    * [Buy a license](https://www.vagrantup.com/vmware/index.html#buy-now) for the VMware plugin
-    * Install it with `vagrant plugin install vagrant-vmware-desktop`.
-    * License it with `vagrant plugin license vagrant-vmware-desktop <path_to_.lic>`.
-    * Download and install the VMware Vagrant utility: https://www.vagrantup.com/vmware/downloads.html
-    * Install the Vagrant-Reload plugin by running the following command: `vagrant plugin install vagrant-reload`.
-    * Download DetectionLabELK to your local machine by running `git clone https://github.com/cyberdefenders/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/cyberdefenders/DetectionLabELK/archive/master.zip).
-    * `cd` into the Vagrant directory: `cd DetectionLabELK/Vagrant` and edit the `Vagrantfile`. Change the lines `cfg.vm.box = "DetectionLabELK/win2016"` and `cfg.vm.box = "DetectionLabELK/win10` to `cfg.vm.box = "../Boxes/windows_2016_vmware.box"` and "`cfg.vm.box = "../Boxes/windows_10_vmware.box"` respectively. Please note that there should be two instances of `cfg.vm.box = "../Boxes/windows_2016_vmware.box"`, one for DC and one for WEF.
-    * Build the lab by executing build script located in the the base directory `../build.sh vmware` (Mac & Linux) or `../build.ps1 vmware` (Windows).
-    * Once finished, ensure you are in `DetectionLabELK/Vagrant` directory and run `vagrant status`. The four machines (wef,dc,logger and win10) should be running. if one of the machines was not running, execute `vagrant reload <host>`. If you would like to pause the whole lab, execute `vagrant suspend` and resume it using `vagrant resume`.
-    * Deployment logs will be present in the `Vagrant` folder as `vagrant_up_<host>.log`
-    * Navigate to https://192.168.38.105:5601 in a browser to access the Kibana dashboard on logger.
-    * Navigate to https://192.168.38.105:8412 in a browser to access the Fleet server on logger. Default credentials are admin:admin123#.
-    * Navigate to https://192.168.38.105:8080/guacamole in a browser to access Guacamole. Default credentials are vagrant:vagrant.
-
-
+## Lab Access: 
+* Navigate to https://192.168.38.105:8080/guacamole in a browser to access Guacamole. Default credentials are vagrant:vagrant.
+* Navigate to https://192.168.38.105:5601 in a browser to access the Kibana dashboard on logger.
+* Navigate to https://192.168.38.105:8412 in a browser to access the Fleet server on logger. Default credentials are admin:admin123#.
+* Navigate to https://192.168.38.103 in a browser to access Microsoft ATA. Default credentials are wef\vagrant:vagrant.
 
 **Support**: If you face any problem, please open a new [issue](https://github.com/cyberdefenders/DetectionLabELK/issues) and provide relevant log file.
