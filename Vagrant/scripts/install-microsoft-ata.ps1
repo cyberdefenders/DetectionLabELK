@@ -10,13 +10,11 @@ using System;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-
 public static class SSLValidator {
     public static bool ReturnTrue(object sender,
         X509Certificate certificate,
         X509Chain chain,
         SslPolicyErrors sslPolicyErrors) { return true; }
-
     public static RemoteCertificateValidationCallback GetDelegate() {
         return new RemoteCertificateValidationCallback(SSLValidator.ReturnTrue);
     }
@@ -49,7 +47,14 @@ if (-not (Test-Path "C:\Program Files\Microsoft Advanced Threat Analytics\Center
         $actualHash = (Get-FileHash -Algorithm SHA256 -Path "$env:temp\$title.iso").Hash
         If (-not ($actualHash -eq $fileHash))
         {
-            throw "$title.iso was not downloaded correctly: hash from downloaded file: $actualHash, should've been: $fileHash"
+            Write-Host "$title.iso was not downloaded correctly: hash from downloaded file: $actualHash, should've been: $fileHash. Re-trying using BitsAdmin now..."
+        }
+        Remove-Item -Path "$env:temp\$title.iso" -Force
+        bitsadmin /Transfer ATA $downloadUrl "$env:temp\$title.iso"
+        $actualHash = (Get-FileHash -Algorithm SHA256 -Path "$env:temp\$title.iso").Hash
+        If (-not ($actualHash -eq $fileHash))
+        {
+            throw "$title.iso was not downloaded correctly after a retry: hash from downloaded file: $actualHash, should've been: $fileHash - Giving up."
         }
     }
     $Mount = Mount-DiskImage -ImagePath "$env:temp\$title.iso" -StorageType ISO -Access ReadOnly -PassThru
@@ -89,13 +94,11 @@ Invoke-Command -computername dc -Credential (new-object pscredential("windomain\
     using System.Net;
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
-
     public static class SSLValidator {
         public static bool ReturnTrue(object sender,
             X509Certificate certificate,
             X509Chain chain,
             SslPolicyErrors sslPolicyErrors) { return true; }
-
         public static RemoteCertificateValidationCallback GetDelegate() {
             return new RemoteCertificateValidationCallback(SSLValidator.ReturnTrue);
         }
@@ -122,8 +125,7 @@ Invoke-Command -computername dc -Credential (new-object pscredential("windomain\
     {
         Write-Host "[$env:computername] ATA Gateway already installed. Moving On."
     }
-    Write-Host "Sleeping 5 minutes to allow ATA gateway to start up..."
-    Start-Sleep -Seconds 300
+    (Get-Service ATAGateway).WaitForStatus('Running', '00:10:00')
     If ((Get-Service "ATAGateway").Status -ne "Running")
     {
         throw "ATA lightweight gateway not running"
