@@ -10,11 +10,13 @@ using System;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+
 public static class SSLValidator {
     public static bool ReturnTrue(object sender,
         X509Certificate certificate,
         X509Chain chain,
         SslPolicyErrors sslPolicyErrors) { return true; }
+
     public static RemoteCertificateValidationCallback GetDelegate() {
         return new RemoteCertificateValidationCallback(SSLValidator.ReturnTrue);
     }
@@ -48,13 +50,13 @@ if (-not (Test-Path "C:\Program Files\Microsoft Advanced Threat Analytics\Center
         If (-not ($actualHash -eq $fileHash))
         {
             Write-Host "$title.iso was not downloaded correctly: hash from downloaded file: $actualHash, should've been: $fileHash. Re-trying using BitsAdmin now..."
-        }
-        Remove-Item -Path "$env:temp\$title.iso" -Force
-        bitsadmin /Transfer ATA $downloadUrl "$env:temp\$title.iso"
-        $actualHash = (Get-FileHash -Algorithm SHA256 -Path "$env:temp\$title.iso").Hash
-        If (-not ($actualHash -eq $fileHash))
-        {
-            throw "$title.iso was not downloaded correctly after a retry: hash from downloaded file: $actualHash, should've been: $fileHash - Giving up."
+            Remove-Item -Path "$env:temp\$title.iso" -Force
+            bitsadmin /Transfer ATA $downloadUrl "$env:temp\$title.iso"
+            $actualHash = (Get-FileHash -Algorithm SHA256 -Path "$env:temp\$title.iso").Hash
+            If (-not ($actualHash -eq $fileHash))
+            {
+                throw "$title.iso was not downloaded correctly after a retry: hash from downloaded file: $actualHash, should've been: $fileHash - Giving up."
+            }
         }
     }
     $Mount = Mount-DiskImage -ImagePath "$env:temp\$title.iso" -StorageType ISO -Access ReadOnly -PassThru
@@ -85,7 +87,7 @@ Start-Sleep -Seconds 60
 
 Invoke-Command -computername dc -Credential (new-object pscredential("windomain\vagrant",(ConvertTo-SecureString -AsPlainText -Force -String "vagrant"))) -ScriptBlock {
 
-    Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) [$env:computername] Installing ATA Lightweight gateway..."
+    Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) [$env:computername] Installing the ATA Lightweight gateway on DC..."
 
     # Enable web requests to endpoints with invalid SSL certs (like self-signed certs)
     if (-not("SSLValidator" -as [type])) {
@@ -94,11 +96,13 @@ Invoke-Command -computername dc -Credential (new-object pscredential("windomain\
     using System.Net;
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
+
     public static class SSLValidator {
         public static bool ReturnTrue(object sender,
             X509Certificate certificate,
             X509Chain chain,
             SslPolicyErrors sslPolicyErrors) { return true; }
+
         public static RemoteCertificateValidationCallback GetDelegate() {
             return new RemoteCertificateValidationCallback(SSLValidator.ReturnTrue);
         }
@@ -109,6 +113,7 @@ Invoke-Command -computername dc -Credential (new-object pscredential("windomain\
 
     If (-not (Test-Path "$env:temp\gatewaysetup.zip"))
     {
+        Write-Host "[$env:computername] ATA Gateway not yet downloaded. Downloading now..."
         Invoke-WebRequest -uri https://wef/api/management/softwareUpdates/gateways/deploymentPackage -UseBasicParsing -OutFile "$env:temp\gatewaysetup.zip" -Credential (new-object pscredential("wef\vagrant",(convertto-securestring -AsPlainText -Force -String "vagrant")))
         Expand-Archive -Path "$env:temp\gatewaysetup.zip" -DestinationPath "$env:temp\gatewaysetup" -Force
     }
@@ -118,23 +123,26 @@ Invoke-Command -computername dc -Credential (new-object pscredential("windomain\
     }
     if (-not (Test-Path "C:\Program Files\Microsoft Advanced Threat Analytics"))
     {
+        Write-Host "[$env:computername] ATA Gateway not yet installed. Attempting to install now..."
         Set-Location "$env:temp\gatewaysetup"
         Start-Process -Wait -FilePath ".\Microsoft ATA Gateway Setup.exe" -ArgumentList "/q NetFrameworkCommandLineArguments=`"/q`" ConsoleAccountName=`"wef\vagrant`" ConsoleAccountPassword=`"vagrant`""
+        Write-Host "[$env:computername] ATA Gateway installation complete!"
     }
     else
     {
         Write-Host "[$env:computername] ATA Gateway already installed. Moving On."
     }
+    Write-Host "[$env:computername] Waiting for the ATA Gateway service to start..."
     (Get-Service ATAGateway).WaitForStatus('Running', '00:10:00')
     If ((Get-Service "ATAGateway").Status -ne "Running")
     {
-        throw "ATA lightweight gateway not running"
+        throw "ATA Gateway service failed to start on DC"
     }
     # Disable invalid web requests to endpoints with invalid SSL certs again
     [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $null
 }
 
-# set dc as domain synchronizer
+# set DC as domain synchronizer
 $config = Invoke-RestMethod -Uri "https://localhost/api/management/systemProfiles/gateways" -UseDefaultCredentials -UseBasicParsing
 $config[0].Configuration.DirectoryServicesResolverConfiguration.UpdateDirectoryEntityChangesConfiguration.IsEnabled = $true
 

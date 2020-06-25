@@ -16,10 +16,10 @@
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
 echo "deb [arch=amd64] https://packages.elastic.co/curator/5/debian stable main" | sudo tee -a /etc/apt/sources.list.d/curator-5.list
-sudo apt-get update
-apt-get install elasticsearch -y # 1st install elasticseatch to get JDK
+apt-get -qq update
+apt-get -qq install elasticsearch -y # 1st install elasticseatch to get JDK
 export JAVA_HOME=/usr/share/elasticsearch/jdk && echo export JAVA_HOME=/usr/share/elasticsearch/jdk >>/etc/bash.bashrc
-apt-get install logstash kibana filebeat elasticsearch-curator -y
+apt-get -qq install kibana filebeat elasticsearch-curator -y
 
 (
   crontab -l 2>/dev/null
@@ -69,48 +69,48 @@ echo logging.dest: \"/var/log/kibana.log\" >>/etc/kibana/kibana.yml
 /bin/systemctl start kibana.service
 
 #Logstash
-echo "http.host: \"192.168.38.105\"" >>/etc/logstash/logstash.yml
-cat >/etc/logstash/conf.d/beats-input.conf <<EOF
-input {
-  beats {
-    host => "192.168.38.105"
-    port => 5044
-  }
-}
-EOF
+# echo "http.host: \"192.168.38.105\"" >>/etc/logstash/logstash.yml
+# cat >/etc/logstash/conf.d/beats-input.conf <<EOF
+# input {
+#   beats {
+#     host => "192.168.38.105"
+#     port => 5044
+#   }
+# }
+# EOF
 
-cat >/etc/logstash/conf.d/syslog-filter.conf <<EOF
-filter {
-  if [type] == "syslog" {
-    grok {
-      match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
-      add_field => [ "received_at", "%{@timestamp}" ]
-      add_field => [ "received_from", "%{host}" ]
-    }
-    syslog_pri { }
-    date {
-      match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
-    }
-  }
-}
-EOF
+# cat >/etc/logstash/conf.d/syslog-filter.conf <<EOF
+# filter {
+#   if [type] == "syslog" {
+#     grok {
+#       match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+#       add_field => [ "received_at", "%{@timestamp}" ]
+#       add_field => [ "received_from", "%{host}" ]
+#     }
+#     syslog_pri { }
+#     date {
+#       match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+#     }
+#   }
+# }
+# EOF
 
-cat >/etc/logstash/conf.d/elasticsearch-output.conf <<EOF
-output {
-  elasticsearch {
-    hosts => ["192.168.38.105:9200"]
-    sniffing => true
-    manage_template => false
-    index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
-    #document_type => "%{[@metadata][type]}"
-  }
-}
-EOF
+# cat >/etc/logstash/conf.d/elasticsearch-output.conf <<EOF
+# output {
+#   elasticsearch {
+#     hosts => ["192.168.38.105:9200"]
+#     sniffing => true
+#     manage_template => false
+#     index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+#     #document_type => "%{[@metadata][type]}"
+#   }
+# }
+# EOF
 
-echo JAVA_HOME="/usr/share/elasticsearch/jdk" >>/etc/default/logstash
+# echo JAVA_HOME="/usr/share/elasticsearch/jdk" >>/etc/default/logstash
 
-/bin/systemctl enable logstash.service
-/bin/systemctl start logstash.service
+# /bin/systemctl enable logstash.service
+# /bin/systemctl start logstash.service
 
 cat >/etc/filebeat/filebeat.yml <<EOF
 filebeat.inputs:
@@ -168,7 +168,7 @@ EOF
 # filebeat --path.config /etc/filebeat modules enable system
 filebeat --path.config /etc/filebeat modules enable suricata
 
-# make sure both of logstash and kibana are up
+# make sure kibana is up and running
 while true; do
   result=$(curl --silent 192.168.38.105:5601/api/status)
   if echo $result | grep -q logger; then break; fi

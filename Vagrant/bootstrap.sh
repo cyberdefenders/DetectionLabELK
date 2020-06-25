@@ -1,10 +1,17 @@
 #! /bin/bash
 
+# Override existing DNS Settings using netplan, but don't do it for Terraform builds
+if ! curl -s 169.254.169.254 --connect-timeout 2 >/dev/null; then
+  echo -e "    eth1:\n      dhcp4: true\n      nameservers:\n        addresses: [8.8.8.8,8.8.4.4]" >> /etc/netplan/01-netcfg.yaml
+  netplan apply
+fi
+sed -i 's/nameserver 127.0.0.53/nameserver 8.8.8.8/g' /etc/resolv.conf && chattr +i /etc/resolv.conf
+
 export DEBIAN_FRONTEND=noninteractive
 echo "apt-fast apt-fast/maxdownloads string 10" | debconf-set-selections
 echo "apt-fast apt-fast/dlflag boolean true" | debconf-set-selections
 
-sed -i "2ideb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse" /etc/apt/sources.list
+# sed -i "2ideb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse\ndeb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse" /etc/apt/sources.list
 
 apt_install_prerequisites() {
   echo "[$(date +%H:%M:%S)]: Adding apt repositories..."
@@ -266,7 +273,7 @@ download_palantir_osquery_config() {
 }
 
 import_osquery_config_into_fleet() {
-  cd /opt
+  cd /opt || exit 1
   wget --progress=bar:force https://github.com/kolide/fleet/releases/download/2.4.0/fleet.zip
   unzip fleet.zip -d fleet
   cp fleet/linux/fleetctl /usr/local/bin/fleetctl && chmod +x /usr/local/bin/fleetctl
@@ -282,13 +289,13 @@ import_osquery_config_into_fleet() {
   sed -i 's/interval: 3600/interval: 180/g' osquery-configuration/Fleet/Endpoints/Windows/osquery.yaml
   sed -i 's/interval: 28800/interval: 900/g' osquery-configuration/Fleet/Endpoints/MacOS/osquery.yaml
   sed -i 's/interval: 28800/interval: 900/g' osquery-configuration/Fleet/Endpoints/Windows/osquery.yaml
-  # These can be removed after this PR is merged: https://github.com/palantir/osquery-configuration/pull/14
-  sed -i "s/labels: null/labels:\n    - MS Windows/g" osquery-configuration/Fleet/Endpoints/Windows/osquery.yaml
-  sed -i "s/labels: null/labels:\n    - MS Windows/g" osquery-configuration/Fleet/Endpoints/packs/windows-application-security.yaml
-  sed -i "s/labels: null/labels:\n    - MS Windows/g" osquery-configuration/Fleet/Endpoints/packs/windows-compliance.yaml
-  sed -i "s/labels: null/labels:\n    - MS Windows/g" osquery-configuration/Fleet/Endpoints/packs/windows-registry-monitoring.yaml
-  sed -i "s/labels: null/labels:\n    - MS Windows\n    - macOS/g" osquery-configuration/Fleet/Endpoints/packs/performance-metrics.yaml
-  sed -i "s/labels: null/labels:\n    - MS Windows\n    - macOS/g" osquery-configuration/Fleet/Endpoints/packs/security-tooling-checks.yaml
+
+  # Don't log osquery INFO messages
+  # Fix snapshot event formatting
+  fleetctl get options > /tmp/options.yaml
+  /usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_min_status' '1'
+  /usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_snapshot_event_type' '2'
+  fleetctl apply -f /tmp/options.yaml
 
   # Use fleetctl to import YAML files
   fleetctl apply -f osquery-configuration/Fleet/Endpoints/MacOS/osquery.yaml
@@ -312,7 +319,7 @@ install_zeek() {
   # SPLUNK_SURICATA_SOURCETYPE='json_suricata'
   sh -c "echo 'deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_18.04/ /' > /etc/apt/sources.list.d/security:zeek.list"
   wget -nv https://download.opensuse.org/repositories/security:zeek/xUbuntu_18.04/Release.key -O /tmp/Release.key
-  apt-key add - </tmp/Release.key
+  apt-key add - </tmp/Release.key &>/dev/null
   # Update APT repositories
   apt-get -qq -ym update
   # Install tools to build and configure Zeek
@@ -445,13 +452,13 @@ test_suricata_prerequisites() {
 
 install_guacamole() {
   echo "[$(date +%H:%M:%S)]: Installing Guacamole..."
-  cd /opt
+  cd /opt || exit 1
   apt-get -qq install -y libcairo2-dev libjpeg62-dev libpng-dev libossp-uuid-dev libfreerdp-dev libpango1.0-dev libssh2-1-dev libssh-dev tomcat8 tomcat8-admin tomcat8-user
   wget --progress=bar:force "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.0.0/source/guacamole-server-1.0.0.tar.gz" -O guacamole-server-1.0.0.tar.gz
-  tar -xvf guacamole-server-1.0.0.tar.gz && cd guacamole-server-1.0.0
+  tar -xf guacamole-server-1.0.0.tar.gz && cd guacamole-server-1.0.0 || echo "[-] Unable to find the Guacamole folder."
   ./configure &>/dev/null && make --quiet &>/dev/null && make --quiet install &>/dev/null || echo "[-] An error occurred while installing Guacamole."
   ldconfig
-  cd /var/lib/tomcat8/webapps
+  cd /var/lib/tomcat8/webapps || echo "[-] Unable to find the tomcat8/webapps folder."
   wget --progress=bar:force "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.0.0/binary/guacamole-1.0.0.war" -O guacamole.war
   mkdir /etc/guacamole
   mkdir /usr/share/tomcat8/.guacamole
