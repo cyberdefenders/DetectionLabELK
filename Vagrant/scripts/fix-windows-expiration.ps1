@@ -1,7 +1,7 @@
 # Purpose: Re-arms the expiration timer on expiring Windows eval images and fixes activation issues
 
 # Check to see if there are days left on the timer or if it's just expired
-$regex = cscript c:\windows\system32\slmgr.vbs /dlv | select-string -Pattern "\((\d+) day\(s\)|grace time expired|0xC004D302|0xC004FC07"
+$regex = cscript c:\windows\system32\slmgr.vbs /dlv | select-string -Pattern "\((\d+) day\(s\)|grace time expired|0xC004D302|0xC004FC07|0x80070422"
 if ($regex.Matches.Value -eq "grace time expired" -or $regex.Matches.Value -eq "0xC004D302") {
   # If it shows expired, it's likely it wasn't properly activated
   Write-Host "It appears Windows was not properly activated. Attempting to resolve..."
@@ -17,7 +17,7 @@ if ($regex.Matches.Value -eq "grace time expired" -or $regex.Matches.Value -eq "
   }
 
   # That happens on Windows 10
-  } elseif ($regex.Matches.Value -eq "0xC004FC07") {
+  } elseif ($regex.Matches.Value -eq "0xC004FC07" -or $regex.Matches.Value -eq  "0x80070422") {
     try {
       cscript c:\windows\system32\slmgr.vbs /rearm
     } catch {
