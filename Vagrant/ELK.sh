@@ -146,24 +146,9 @@ cat >/etc/filebeat/modules.d/osquery.yml <<EOF
     var.paths: ["/opt/kolide-quickstart/osquery_result"]
 EOF
 
-cat >/etc/filebeat/modules.d/zeek.yml <<EOF
-- module: zeek
-  # All logs
-  connection:
-    enabled: true
-  dns:
-    enabled: true
-  http:
-    enabled: true
-  files:
-    enabled: true
-  ssl:
-    enabled: true
-  notice:
-    enabled: true
-
-    var.paths: ["/opt/zeek/logs/current/*.log"]
-EOF
+#sed -i 's/enabled: true/enabled: true\n    var.paths: ["\/opt\/zeek\/logs\/current\/"]/' /etc/filebeat/modules.d/zeek.yml.disabled
+mkdir /var/log/bro/; ln -s /opt/zeek/logs/current/ /var/log/bro/current
+filebeat --path.config /etc/filebeat modules enable zeek
 
 # filebeat --path.config /etc/filebeat modules enable system
 filebeat --path.config /etc/filebeat modules enable suricata
