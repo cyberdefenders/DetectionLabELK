@@ -72,6 +72,7 @@ output.elasticsearch:
 
   winlogbeat --path.config C:\ProgramData\chocolatey\lib\winlogbeat\tools setup
 
+  sc.exe failure winlogbeat reset= 30 actions= restart/5000
   Start-Service winlogbeat
 }
 else {
