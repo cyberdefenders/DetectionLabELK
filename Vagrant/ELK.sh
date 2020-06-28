@@ -136,7 +136,7 @@ output.elasticsearch:
 #   hosts: ["192.168.38.105:5044"]
 EOF
 
-cat >/etc/filebeat/modules.d/osquery.yml <<EOF
+cat >/etc/filebeat/modules.d/osquery.yml.disabled <<EOF
 - module: osquery
   result:
     enabled: true
@@ -145,6 +145,7 @@ cat >/etc/filebeat/modules.d/osquery.yml <<EOF
     # Filebeat will choose the paths depending on your OS.
     var.paths: ["/opt/kolide-quickstart/osquery_result"]
 EOF
+filebeat --path.config /etc/filebeat modules enable osquery
 
 #sed -i 's/enabled: true/enabled: true\n    var.paths: ["\/opt\/zeek\/logs\/current\/"]/' /etc/filebeat/modules.d/zeek.yml.disabled
 mkdir /var/log/bro/; ln -s /opt/zeek/logs/current/ /var/log/bro/current
