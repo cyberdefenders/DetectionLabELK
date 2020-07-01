@@ -1,4 +1,4 @@
-![DetectionLab](./img/DetectionLabELK.png)
+![DetectionLab](./img/DetectionLabELK-new.jpg)
 # DetectionLabELK
 DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/clong/DetectionLab) with ELK stack instead of Splunk.
 
