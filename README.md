@@ -8,6 +8,16 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 [![Twitter](https://img.shields.io/twitter/follow/DetectionLab.svg?style=social)](https://twitter.com/DetectionLab)
 [![Twitter](https://img.shields.io/twitter/follow/CyberDefenders?style=social)](https://twitter.com/CyberDefenders)
 
+## Description:
+DetectionLabELK is the perfect lab to use if you would like to build effective detection capabilities. It has been designed with defenders in mind. Its primary purpose is to allow blueteams to quickly build a Windows domain that comes pre-loaded with security tooling and some best practices when it comes to system logging configurations. It can easily be modified to fit most needs or expanded to include additional hosts.
+
+## Use cases:
+A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&CK framework and would like to develop detections for its tactics. You can use DetectionLabELK to quickly run atomic tests, see what logs are being generated and compare it to your production environment. This way you can:
+
+* Validate that your production logging is working as expected.
+* Ensure that your SIEM is collecting the correct events.
+* Enhance alerts quality by reducing false positives and eliminating false negatives.
+* Minimze coverage gaps.
 
 ## Lab Information:
 * **Domain Name**: windomain.local
