@@ -45,7 +45,6 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     * Powershell logging GPO
     * Enhanced Windows Auditing policy GPO
     * Sysmon
-    * Velociraptor
     * osquery
     * Elastic Beats Forwarder (Forwards Sysmon & osquery)
     * Sysinternals Tools
@@ -57,7 +56,6 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     * Windows Event Subscription Creation
     * Powershell transcription logging share
     * Sysmon
-    * Velociraptor
     * osquery
     * Elastic Beats Forwarder (Forwards WinEventLog & Powershell & Sysmon & osquery)
     * Sysinternals tools
@@ -65,7 +63,6 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 3.  **Win10 - Windows 10 Workstation**
     * Simulates employee workstation
     * Sysmon
-    * Velociraptor
     * osquery
     * ELK Beats Forwarder (Forwards Sysmon & osquery)
     * Sysinternals Tools
@@ -76,8 +73,6 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     * Bro
     * Suricata
     * Guacamole
-    * Velociraptor server
-
 
 ## Requirements
 * 55GB+ of free disk space
