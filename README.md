@@ -39,6 +39,45 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 * All autostart items are logged to Windows Event Logs via [AutorunsToWinEventLog](https://github.com/palantir/windows-event-forwarding/tree/master/AutorunsToWinEventLog)
 * SMBv1 Auditing is enabled
 
+## Lab Hosts:
+1.  **DC - Windows 2016 Domain Controller**
+    * WEF Server Configuration GPO
+    * Powershell logging GPO
+    * Enhanced Windows Auditing policy GPO
+    * Sysmon
+    * Velociraptor
+    * osquery
+    * Elastic Beats Forwarder (Forwards Sysmon & osquery)
+    * Sysinternals Tools
+    * Microsft Advanced Threat Analytics Lightweight Gateway
+
+2.  **WEF - Windows 2016 Server**
+    * Microsoft Advanced Threat Analytics
+    * Windows Event Collector
+    * Windows Event Subscription Creation
+    * Powershell transcription logging share
+    * Sysmon
+    * Velociraptor
+    * osquery
+    * Elastic Beats Forwarder (Forwards WinEventLog & Powershell & Sysmon & osquery)
+    * Sysinternals tools
+
+3.  **Win10 - Windows 10 Workstation**
+    * Simulates employee workstation
+    * Sysmon
+    * Velociraptor
+    * osquery
+    * ELK Beats Forwarder (Forwards Sysmon & osquery)
+    * Sysinternals Tools
+
+4.  **Logger - Ubuntu 16.04**  
+    * Kibana
+    * Fleet osquery Manager
+    * Bro
+    * Suricata
+    * Guacamole
+    * Velociraptor server
+
 
 ## Requirements
 * 55GB+ of free disk space
