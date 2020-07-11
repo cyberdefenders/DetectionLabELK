@@ -64,7 +64,6 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     * Simulates employee workstation
     * Sysmon
     * osquery
-    * ELK Beats Forwarder (Forwards Sysmon & osquery)
     * Sysinternals Tools
 
 4.  **Logger - Ubuntu 16.04**  
@@ -72,6 +71,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     * Fleet osquery Manager
     * Bro
     * Suricata
+    * Elastic Beats Forwarder (Forwards Bro logs & Suricata & osquery)
     * Guacamole
 
 ## Requirements
