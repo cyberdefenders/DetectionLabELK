@@ -66,7 +66,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     * osquery
     * Sysinternals Tools
 
-4.  **Logger - Ubuntu 16.04**  
+4.  **Logger - Ubuntu 18.04**  
     * Kibana
     * Fleet osquery Manager
     * Bro
