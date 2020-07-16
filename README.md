@@ -17,7 +17,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 * Validate that your production logging is working as expected.
 * Ensure that your SIEM is collecting the correct events.
 * Enhance alerts quality by reducing false positives and eliminating false negatives.
-* Minimze coverage gaps.
+* Minimize coverage gaps.
 
 ## Lab Information:
 * **Domain Name**: windomain.local
