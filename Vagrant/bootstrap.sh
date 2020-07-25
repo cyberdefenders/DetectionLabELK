@@ -132,6 +132,10 @@ install_fleet_import_osquery_config() {
     cp fleet/linux/fleet /usr/local/bin/fleet && chmod +x /usr/local/bin/fleet
 
     fleet prepare db --mysql_address=127.0.0.1:3306 --mysql_database=kolide  --mysql_username=root --mysql_password=kolide
+    
+    # Set the enrollment secret to match what we deploy to Windows hosts
+    mysql -uroot --password=kolide -e 'use kolide; update enroll_secrets set secret = "enrollmentsecret" where active=1;'
+    echo "Updated enrollment secret"
 
     cp /vagrant/resources/fleet/server.* /opt/fleet/
     cp /vagrant/resources/fleet/fleet.service /etc/systemd/system/fleet.service
@@ -142,9 +146,7 @@ install_fleet_import_osquery_config() {
     /bin/systemctl start fleet.service
 
 
-    # Set the enrollment secret to match what we deploy to Windows hosts
-    mysql -uroot --password=kolide -e 'use kolide; update enroll_secrets set secret = "enrollmentsecret" where active=1;'
-    echo "Updated enrollment secret"
+
 
     fleetctl config set --address https://192.168.38.105:8412
     fleetctl config set --tls-skip-verify true
