@@ -22,9 +22,9 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 ## Lab Information:
 * **Domain Name**: windomain.local
 * **Windows Admininstrator login**: vagrant:vagrant
-* **Fleet login**: https://192.168.38.105:8412 - admin:admin123#
+* **Fleet login**: https://192.168.38.105:8412 - agrant:vagrant
 * **Kibana login**: http://192.168.38.105:5601
-* **Microsoft ATA login**: https://192.168.38.103 - wef\vagrant:vagrant
+* **Microsoft ATA login**: https://192.168.38.103 - agrant:vagrant
 * **Guacamole login**: http://192.168.38.105:8080/guacamole - vagrant:vagrant
 
 
