@@ -279,8 +279,8 @@ import_osquery_config_into_fleet() {
   cp fleet/linux/fleetctl /usr/local/bin/fleetctl && chmod +x /usr/local/bin/fleetctl
   fleetctl config set --address https://192.168.38.105:8412
   fleetctl config set --tls-skip-verify true
-  fleetctl setup --email info@cyberdefenders.org --username vagrant --password 'vagrant' --org-name DetectionLabELK
-  fleetctl login --email info@cyberdefenders.org --password 'vagrant'
+  fleetctl setup --email info@cyberdefenders.org --username vagrant --password vagrant --org-name DetectionLabELK
+  fleetctl login --email info@cyberdefenders.org --password vagrant
 
   # Change the query invervals to reflect a lab environment
   # Every hour -> Every 3 minutes
