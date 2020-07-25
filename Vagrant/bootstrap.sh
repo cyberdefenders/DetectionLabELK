@@ -279,8 +279,8 @@ import_osquery_config_into_fleet() {
   cp fleet/linux/fleetctl /usr/local/bin/fleetctl && chmod +x /usr/local/bin/fleetctl
   fleetctl config set --address https://192.168.38.105:8412
   fleetctl config set --tls-skip-verify true
-  fleetctl setup --email admin@detectionlab.network --username admin --password 'admin123#' --org-name DetectionLab
-  fleetctl login --email admin@detectionlab.network --password 'admin123#'
+  fleetctl setup --email info@cyberdefenders.org --username vagrant --password 'vagrant' --org-name DetectionLabELK
+  fleetctl login --email info@cyberdefenders.org --password 'vagrant'
 
   # Change the query invervals to reflect a lab environment
   # Every hour -> Every 3 minutes
@@ -477,7 +477,7 @@ postinstall_tasks() {
   # Include Splunk and Zeek in the PATH
   echo export PATH="$PATH:/opt/zeek/bin" >>~/.bashrc
   # Ping DetectionLab server for usage statistics
-  # curl -A "DetectionLab-logger" "https://detectionlab.network/logger"
+  # curl -A "DetectionLab-logger" "https://cyberdefenders.org/logger"
 }
 
 main() {
