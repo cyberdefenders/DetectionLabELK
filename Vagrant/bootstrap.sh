@@ -322,6 +322,8 @@ install_guacamole() {
   cp /vagrant/resources/guacamole/guacd.service /lib/systemd/system
   sudo ln -s /etc/guacamole/guacamole.properties /usr/share/tomcat8/.guacamole/
   sudo ln -s /etc/guacamole/user-mapping.xml /usr/share/tomcat8/.guacamole/
+  chown tomcat8 /etc/guacamole/user-mapping.xml
+  
   systemctl enable guacd
   systemctl enable tomcat8
   systemctl start guacd
