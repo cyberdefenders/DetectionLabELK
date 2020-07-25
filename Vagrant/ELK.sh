@@ -143,7 +143,7 @@ cat >/etc/filebeat/modules.d/osquery.yml.disabled <<EOF
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
-    var.paths: ["/opt/kolide-quickstart/osquery_result"]
+    var.paths: ["/var/log/kolide/osquery_result"]
 EOF
 filebeat --path.config /etc/filebeat modules enable osquery
 
