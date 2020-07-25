@@ -133,9 +133,6 @@ install_fleet_import_osquery_config() {
 
     fleet prepare db --mysql_address=127.0.0.1:3306 --mysql_database=kolide  --mysql_username=root --mysql_password=kolide
     
-    # Set the enrollment secret to match what we deploy to Windows hosts
-    mysql -uroot --password=kolide -e 'use kolide; update enroll_secrets set secret = "enrollmentsecret" where active=1;'
-    echo "Updated enrollment secret"
 
     cp /vagrant/resources/fleet/server.* /opt/fleet/
     cp /vagrant/resources/fleet/fleet.service /etc/systemd/system/fleet.service
@@ -145,13 +142,21 @@ install_fleet_import_osquery_config() {
     /bin/systemctl enable fleet.service
     /bin/systemctl start fleet.service
 
-
-
+    echo "[$(date +%H:%M:%S)]: Waiting for fleet service..."
+    while true; do
+      result=$(curl --silent -k https://192.168.38.105:8412)
+      if echo $result | grep -q setup; then break; fi
+      sleep 1
+    done
 
     fleetctl config set --address https://192.168.38.105:8412
     fleetctl config set --tls-skip-verify true
     fleetctl setup --email info@cyberdefenders.org --username vagrant --password vagrant --org-name DetectionLabELK
     fleetctl login --email info@cyberdefenders.org --password vagrant
+
+    # Set the enrollment secret to match what we deploy to Windows hosts
+    mysql -uroot --password=kolide -e 'use kolide; update enroll_secrets set secret = "enrollmentsecret" where active=1;'
+    echo "Updated enrollment secret"
 
     # Change the query invervals to reflect a lab environment
     # Every hour -> Every 3 minutes
@@ -163,10 +168,10 @@ install_fleet_import_osquery_config() {
 
     # Don't log osquery INFO messages
     # Fix snapshot event formatting
-    fleetctl get options > /tmp/options.yaml
-    /usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_min_status' '1'
-    /usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_snapshot_event_type' '2'
-    fleetctl apply -f /tmp/options.yaml
+    #fleetctl get options > /tmp/options.yaml
+    #/usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.enroll_secret' 'enrollmentsecret'
+    #/usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_snapshot_event_type' 'true'
+    #fleetctl apply -f /tmp/options.yaml
 
     # Use fleetctl to import YAML files
     fleetctl apply -f osquery-configuration/Fleet/Endpoints/MacOS/osquery.yaml
