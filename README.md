@@ -35,7 +35,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 * [Palantir's Windows Event Forwarding](http://github.com/palantir/windows-event-forwarding)  subscriptions and custom channels are implemented
 * Powershell transcript logging is enabled. All logs are saved to `\\wef\pslogs`
 * osquery comes installed on each host and is pre-configured to connect to a [Fleet](https://kolide.co/fleet) server via TLS. Fleet is preconfigured with the configuration from [Palantir's osquery Configuration](https://github.com/palantir/osquery-configuration)
-* Sysmon is installed and configured using SwiftOnSecurity’s open-sourced configuration
+* Sysmon is installed and configured using Olaf's open-sourced configuration
 * All autostart items are logged to Windows Event Logs via [AutorunsToWinEventLog](https://github.com/palantir/windows-event-forwarding/tree/master/AutorunsToWinEventLog)
 * SMBv1 Auditing is enabled
 
@@ -106,7 +106,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 ## Lab Access: 
 * Navigate to https://192.168.38.105:8080/guacamole in a browser to access Guacamole. Default credentials are vagrant:vagrant.
 * Navigate to https://192.168.38.105:5601 in a browser to access the Kibana dashboard on logger.
-* Navigate to https://192.168.38.105:8412 in a browser to access the Fleet server on logger. Default credentials are admin:admin123#.
-* Navigate to https://192.168.38.103 in a browser to access Microsoft ATA. Default credentials are wef\vagrant:vagrant.
+* Navigate to https://192.168.38.105:8412 in a browser to access the Fleet server on logger. Default credentials are vagrant:vagrant.
+* Navigate to https://192.168.38.103 in a browser to access Microsoft ATA. Default credentials are vagrant:vagrant.
 
 **Support**: If you face any problem, please open a new [issue](https://github.com/cyberdefenders/DetectionLabELK/issues) and provide relevant log file.
