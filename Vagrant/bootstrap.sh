@@ -28,7 +28,7 @@ apt_install_prerequisites() {
   apt-get -qq update
   apt-get -qq install -y apt-fast
   echo "[$(date +%H:%M:%S)]: Running apt-fast install..."
-  apt-fast -qq install -y jq whois build-essential git docker docker-compose unzip htop yq
+  apt-fast -qq install -y jq whois build-essential git unzip htop yq mysql-server redis-server python-pip
 }
 
 modify_motd() {
@@ -44,7 +44,7 @@ modify_motd() {
 }
 
 test_prerequisites() {
-  for package in jq whois build-essential git docker docker-compose unzip yq; do
+    for package in jq whois build-essential git unzip yq mysql-server redis-server python-pip; do
     echo "[$(date +%H:%M:%S)]: [TEST] Validating that $package is correctly installed..."
     # Loop through each package using dpkg
     if ! dpkg -S $package >/dev/null; then
@@ -118,13 +118,9 @@ install_fleet_import_osquery_config() {
     echo -e "\n127.0.0.1       kolide" >>/etc/hosts
     echo -e "\n127.0.0.1       logger" >>/etc/hosts
     
-    apt-get -q -y install mysql-server
 
     mysql -uroot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'kolide';"
     mysql -uroot -pkolide -e "create database kolide;"
-
-    sudo apt-get install redis-server -y
-    sudo apt install unzip -y
 
     wget --progress=bar:force https://github.com/kolide/fleet/releases/download/3.0.0/fleet.zip
     unzip fleet.zip -d fleet
@@ -168,10 +164,10 @@ install_fleet_import_osquery_config() {
 
     # Don't log osquery INFO messages
     # Fix snapshot event formatting
-    #fleetctl get options > /tmp/options.yaml
-    #/usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.enroll_secret' 'enrollmentsecret'
-    #/usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_snapshot_event_type' 'true'
-    #fleetctl apply -f /tmp/options.yaml
+    fleetctl get options > /tmp/options.yaml
+    /usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_snapshot_event_type' 'true'
+    sed -i 's/kind: option/kind: options/g' /tmp/options.yaml
+    fleetctl apply -f /tmp/options.yaml
 
     # Use fleetctl to import YAML files
     fleetctl apply -f osquery-configuration/Fleet/Endpoints/MacOS/osquery.yaml
@@ -196,7 +192,7 @@ install_zeek() {
   # Update APT repositories
   apt-get -qq -ym update
   # Install tools to build and configure Zeek
-  apt-get -qq -ym install zeek crudini python-pip
+  apt-get -qq -ym install zeek crudini
   export PATH=$PATH:/opt/zeek/bin
   pip install zkg==2.1.1
   zkg refresh
@@ -261,6 +257,7 @@ install_suricata() {
   cd /opt || exit 1
   git clone https://github.com/OISF/suricata-update.git
   cd /opt/suricata-update || exit 1
+  pip install pyyaml
   python setup.py install
 
   cp /vagrant/resources/suricata/suricata.yaml /etc/suricata/suricata.yaml
