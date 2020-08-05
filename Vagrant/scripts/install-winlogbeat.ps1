@@ -70,6 +70,12 @@ output.elasticsearch:
 "@
   $confFile | Out-File -FilePath C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat.yml -Encoding ascii
 
+  $elastic_pass =cat C:\vagrant\resources\kibana\kibana_passwords.txt | Select-String -Pattern "elastic\s\=\s(.*)"
+
+  Add-Content C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat.yml ("  username: `"elastic`"")
+  Add-Content C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat.yml ("  password: `"$($elastic_pass.matches.groups[1])`"")
+
+
   winlogbeat --path.config C:\ProgramData\chocolatey\lib\winlogbeat\tools setup
 
   sc.exe failure winlogbeat reset= 30 actions= restart/5000
