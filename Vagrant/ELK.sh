@@ -33,6 +33,8 @@ cluster.name: cydef-es-cluster
 node.name: \${HOSTNAME}
 path.data: /var/lib/elasticsearch
 path.logs: /var/log/elasticsearch
+xpack.security.enabled: true
+xpack.security.authc.api_key.enabled: true
 EOF
 
 cat >/etc/default/elasticsearch <<EOF
@@ -59,12 +61,30 @@ EOF
 /bin/systemctl enable elasticsearch.service
 /bin/systemctl start elasticsearch.service
 
+# ES has to be running before this can be ran. 
+mkdir /opt/kibana/
+yes | /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto >> /opt/kibana/kibana_passwords.txt
+mkdir /vagrant/resources/kibana
+cp /opt/kibana/kibana_passwords.txt /vagrant/resources/kibana/
+
+KIBANA_SYS_PASS="$(grep -E "kibana_system \S .*" /opt/kibana/kibana_passwords.txt)"
+ELASTIC_PASS="$(grep -E "elastic \S .*" /vagrant/resources/kibana/kibana_passwords.txt)"
+KIBANA_UUID=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
 #kibana
 touch /var/log/kibana.log
 chown kibana:kibana /var/log/kibana.log
 echo server.host: \"192.168.38.105\" >>/etc/kibana/kibana.yml
 echo elasticsearch.hosts: \[\"http://192.168.38.105:9200\"\] >>/etc/kibana/kibana.yml
 echo logging.dest: \"/var/log/kibana.log\" >>/etc/kibana/kibana.yml
+
+# Add Kibana security requirements
+echo xpack.security.enabled: true >>/etc/kibana/kibana.yml
+echo elasticsearch.username: \"kibana_system\" >>/etc/kibana/kibana.yml
+printf 'elasticsearch.password: \"' >>/etc/kibana/kibana.yml
+printf %s  ${KIBANA_SYS_PASS##*=}\" >>/etc/kibana/kibana.yml
+printf '\nxpack.encryptedSavedObjects.encryptionKey: \"' >>/etc/kibana/kibana.yml
+printf %s  ${KIBANA_UUID}\" >>/etc/kibana/kibana.yml
 /bin/systemctl enable kibana.service
 /bin/systemctl start kibana.service
 
@@ -129,12 +149,18 @@ setup.kibana:
   host: "192.168.38.105:5601"
 setup.dashboards.enabled: true
 
-output.elasticsearch:
-  hosts: ["192.168.38.105:9200"]
-
 # output.logstash:
 #   hosts: ["192.168.38.105:5044"]
+
+output.elasticsearch:
+  hosts: ["192.168.38.105:9200"]
 EOF
+
+echo "  "username: \"elastic\" >>/etc/filebeat/filebeat.yml
+printf '  password: \"' >>/etc/filebeat/filebeat.yml
+printf %s  ${ELASTIC_PASS##*=}\" >>/etc/filebeat/filebeat.yml
+
+
 
 cat >/etc/filebeat/modules.d/osquery.yml.disabled <<EOF
 - module: osquery
@@ -155,10 +181,12 @@ filebeat --path.config /etc/filebeat modules enable zeek
 filebeat --path.config /etc/filebeat modules enable suricata
 
 # make sure kibana is up and running
-while true; do
-  result=$(curl --silent 192.168.38.105:5601/api/status)
-  if echo $result | grep -q logger; then break; fi
-  sleep 1
-done
+#while true; do
+#  result=$(curl --silent 192.168.38.105:5601/api/status)
+#  if echo $result | grep -q logger; then break; fi
+#  sleep 1
+#done
 /bin/systemctl enable filebeat.service
 /bin/systemctl start filebeat.service
+
+echo "Login to Kibana via http://192.168.38.105:5601 and use the elastic password found in /opt/kibana/kibana_passwords.txt"
