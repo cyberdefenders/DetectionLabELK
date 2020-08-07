@@ -26,6 +26,9 @@ apt-get -qq install kibana filebeat elasticsearch-curator -y
   echo 0 0 \* \* \* curator_cli --host 192.168.38.105 delete_indices --filter_list \'{\"filtertype\": \"age\", \"source\": \"name\", \"timestring\": \"\\%Y.\\%m.\\%d\", \"unit\": \"days\", \"unit_count\": 2, \"direction\": \"older\"}\' \> /tmp/cron.log 2\>\&1
 ) | crontab -
 
+printf vagrant | /usr/share/elasticsearch/bin/elasticsearch-keystore add -x "bootstrap.password" -f
+/usr/share/elasticsearch/bin/elasticsearch-users useradd vagrant -p vagrant -r superuser
+
 cat >/etc/elasticsearch/elasticsearch.yml <<EOF
 network.host: _eth1:ipv4_
 discovery.type: single-node
@@ -33,6 +36,13 @@ cluster.name: cydef-es-cluster
 node.name: \${HOSTNAME}
 path.data: /var/lib/elasticsearch
 path.logs: /var/log/elasticsearch
+xpack.security.enabled: true
+xpack.security.authc:
+        api_key.enabled: true
+        anonymous:
+                username: anonymous
+                roles: superuser
+                authz_exception: false
 EOF
 
 cat >/etc/default/elasticsearch <<EOF
@@ -62,9 +72,17 @@ EOF
 #kibana
 touch /var/log/kibana.log
 chown kibana:kibana /var/log/kibana.log
-echo server.host: \"192.168.38.105\" >>/etc/kibana/kibana.yml
-echo elasticsearch.hosts: \[\"http://192.168.38.105:9200\"\] >>/etc/kibana/kibana.yml
-echo logging.dest: \"/var/log/kibana.log\" >>/etc/kibana/kibana.yml
+cat >/etc/kibana/kibana.yml <<EOF
+server.host: "192.168.38.105"
+elasticsearch.hosts: ["http://192.168.38.105:9200"]
+logging.dest: "/var/log/kibana.log"
+kibana.defaultAppId: "discover"
+telemetry.enabled: false
+telemetry.optIn: false
+newsfeed.enabled: false
+xpack.encryptedSavedObjects.encryptionKey: 'fhjskloppd678ehkdfdlliverpoolfcr'
+EOF
+
 /bin/systemctl enable kibana.service
 /bin/systemctl start kibana.service
 
@@ -127,6 +145,9 @@ filebeat.config.modules:
 
 setup.kibana:
   host: "192.168.38.105:5601"
+  username: vagrant
+  password: vagrant
+
 setup.dashboards.enabled: true
 
 output.elasticsearch:
@@ -148,7 +169,8 @@ EOF
 filebeat --path.config /etc/filebeat modules enable osquery
 
 #sed -i 's/enabled: true/enabled: true\n    var.paths: ["\/opt\/zeek\/logs\/current\/"]/' /etc/filebeat/modules.d/zeek.yml.disabled
-mkdir /var/log/bro/; ln -s /opt/zeek/logs/current/ /var/log/bro/current
+mkdir /var/log/bro/
+ln -s /opt/zeek/logs/current/ /var/log/bro/current
 filebeat --path.config /etc/filebeat modules enable zeek
 
 # filebeat --path.config /etc/filebeat modules enable system
@@ -156,7 +178,7 @@ filebeat --path.config /etc/filebeat modules enable suricata
 
 # make sure kibana is up and running
 while true; do
-  result=$(curl --silent 192.168.38.105:5601/api/status)
+  result=$(curl -uvagrant:vagrant --silent 192.168.38.105:5601/api/status)
   if echo $result | grep -q logger; then break; fi
   sleep 1
 done

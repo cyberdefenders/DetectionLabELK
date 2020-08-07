@@ -63,6 +63,9 @@ winlogbeat.event_logs:
 
 setup.kibana:
   host: "192.168.38.105:5601"
+  username: vagrant
+  password: vagrant
+
 setup.dashboards.enabled: true
 
 output.elasticsearch:
