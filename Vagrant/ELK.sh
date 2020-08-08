@@ -184,3 +184,6 @@ while true; do
 done
 /bin/systemctl enable filebeat.service
 /bin/systemctl start filebeat.service
+
+# load SIEM prebuilt rules
+curl -uvagrant:vagrant -XPUT "192.168.38.105:5601/api/detection_engine/rules/prepackaged" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
