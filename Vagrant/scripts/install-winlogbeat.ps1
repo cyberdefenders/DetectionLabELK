@@ -5,6 +5,13 @@ If (-not ($service)) {
   choco install winlogbeat -y
 
   $confFile = @"
+processors:
+  - script:
+      when.equals.winlog.channel: Security
+      lang: javascript
+      id: security
+      file: `${path.home}/module/security/config/winlogbeat-security.js
+
 winlogbeat.event_logs:
   - name: ForwardedEvents
     ignore_older: 15m
