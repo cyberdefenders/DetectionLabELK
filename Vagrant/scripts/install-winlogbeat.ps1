@@ -74,6 +74,7 @@ setup.kibana:
   password: vagrant
 
 setup.dashboards.enabled: true
+setup.ilm.enabled: false
 
 output.elasticsearch:
   hosts: ["192.168.38.105:9200"]

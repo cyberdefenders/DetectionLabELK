@@ -1,17 +1,4 @@
 #!/bin/bash
-# cat >/etc/netplan/50-cloud-init.yaml <<EOL
-# network:
-#     ethernets:
-#         ens33:
-#             dhcp4: no
-#             addresses: [192.168.38.105/24]
-#             gateway4: 172.16.16.2
-#             nameservers:
-#                 addresses: [8.8.8.8, 8.8.4.4]
-#     version: 2
-#     renderer: networkd
-# EOL
-# sudo netplan apply
 
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
@@ -19,7 +6,7 @@ echo "deb [arch=amd64] https://packages.elastic.co/curator/5/debian stable main"
 apt-get -qq update
 apt-get -qq install elasticsearch -y # 1st install elasticseatch to get JDK
 export JAVA_HOME=/usr/share/elasticsearch/jdk && echo export JAVA_HOME=/usr/share/elasticsearch/jdk >>/etc/bash.bashrc
-apt-get -qq install kibana filebeat elasticsearch-curator -y
+apt-get -qq install kibana filebeat auditbeat elasticsearch-curator -y
 
 (
   crontab -l 2>/dev/null
@@ -80,55 +67,13 @@ kibana.defaultAppId: "discover"
 telemetry.enabled: false
 telemetry.optIn: false
 newsfeed.enabled: false
+xpack.security.enabled: true
+xpack.ingestManager.fleet.tlsCheckDisabled: true
 xpack.encryptedSavedObjects.encryptionKey: 'fhjskloppd678ehkdfdlliverpoolfcr'
 EOF
 
 /bin/systemctl enable kibana.service
 /bin/systemctl start kibana.service
-
-#Logstash
-# echo "http.host: \"192.168.38.105\"" >>/etc/logstash/logstash.yml
-# cat >/etc/logstash/conf.d/beats-input.conf <<EOF
-# input {
-#   beats {
-#     host => "192.168.38.105"
-#     port => 5044
-#   }
-# }
-# EOF
-
-# cat >/etc/logstash/conf.d/syslog-filter.conf <<EOF
-# filter {
-#   if [type] == "syslog" {
-#     grok {
-#       match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
-#       add_field => [ "received_at", "%{@timestamp}" ]
-#       add_field => [ "received_from", "%{host}" ]
-#     }
-#     syslog_pri { }
-#     date {
-#       match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
-#     }
-#   }
-# }
-# EOF
-
-# cat >/etc/logstash/conf.d/elasticsearch-output.conf <<EOF
-# output {
-#   elasticsearch {
-#     hosts => ["192.168.38.105:9200"]
-#     sniffing => true
-#     manage_template => false
-#     index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
-#     #document_type => "%{[@metadata][type]}"
-#   }
-# }
-# EOF
-
-# echo JAVA_HOME="/usr/share/elasticsearch/jdk" >>/etc/default/logstash
-
-# /bin/systemctl enable logstash.service
-# /bin/systemctl start logstash.service
 
 cat >/etc/filebeat/filebeat.yml <<EOF
 filebeat.inputs:
@@ -149,12 +94,10 @@ setup.kibana:
   password: vagrant
 
 setup.dashboards.enabled: true
+setup.ilm.enabled: false
 
 output.elasticsearch:
   hosts: ["192.168.38.105:9200"]
-
-# output.logstash:
-#   hosts: ["192.168.38.105:5044"]
 EOF
 
 cat >/etc/filebeat/modules.d/osquery.yml.disabled <<EOF
@@ -168,15 +111,56 @@ cat >/etc/filebeat/modules.d/osquery.yml.disabled <<EOF
 EOF
 filebeat --path.config /etc/filebeat modules enable osquery
 
-#sed -i 's/enabled: true/enabled: true\n    var.paths: ["\/opt\/zeek\/logs\/current\/"]/' /etc/filebeat/modules.d/zeek.yml.disabled
+cat >/etc/auditbeat/auditbeat.yml <<EOF
+auditbeat.config.modules:
+  path: \${path.config}/modules.d/*.yml
+  reload.period: 10s
+  reload.enabled: true
+auditbeat.max_start_delay: 10s
+
+auditbeat.modules:
+- module: auditd
+  audit_rule_files: [ '\${path.config}/audit.rules.d/*.conf' ]
+  audit_rules: |
+- module: file_integrity
+  paths:
+  - /bin
+  - /usr/bin
+  - /sbin
+  - /usr/sbin
+  - /etc
+- module: system
+  state.period: 12h
+  user.detect_password_changes: true
+  login.wtmp_file_pattern: /var/log/wtmp*
+  login.btmp_file_pattern: /var/log/btmp*
+setup.template.settings:
+  index.number_of_shards: 1
+setup.kibana:
+  host: "192.168.38.105:5601"
+  username: vagrant
+  password: vagrant
+
+setup.dashboards.enabled: true
+setup.ilm.enabled: false
+
+output.elasticsearch:
+  hosts: ["192.168.38.105:9200"]
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+EOF
+mv /etc/auditbeat/audit.rules.d/sample-rules.conf.disabled /etc/auditbeat/audit.rules.d/sample-rules.conf
+
 mkdir /var/log/bro/
 ln -s /opt/zeek/logs/current/ /var/log/bro/current
 filebeat --path.config /etc/filebeat modules enable zeek
 
-# filebeat --path.config /etc/filebeat modules enable system
 filebeat --path.config /etc/filebeat modules enable suricata
 
 # make sure kibana is up and running
+echo "Waiting for Kibana to be up..."
 while true; do
   result=$(curl -uvagrant:vagrant --silent 192.168.38.105:5601/api/status)
   if echo $result | grep -q logger; then break; fi
@@ -185,5 +169,14 @@ done
 /bin/systemctl enable filebeat.service
 /bin/systemctl start filebeat.service
 
+/bin/systemctl enable auditbeat.service
+/bin/systemctl start auditbeat.service
+
 # load SIEM prebuilt rules
-curl -uvagrant:vagrant -XPUT "192.168.38.105:5601/api/detection_engine/rules/prepackaged" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
+echo "Load SIEM prebuilt rules"
+curl -s -uvagrant:vagrant -XPOST "192.168.38.105:5601/api/detection_engine/index" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
+curl -s -uvagrant:vagrant -XPUT "192.168.38.105:5601/api/detection_engine/rules/prepackaged" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
+
+# Enable elasticsearch trial
+# echo "Enable elastic trial version"
+# curl -s -XPOST "192.168.38.105:9200/_license/start_trial?acknowledge=true&pretty"
