@@ -2,7 +2,7 @@
 
 # Override existing DNS Settings using netplan, but don't do it for Terraform builds
 if ! curl -s 169.254.169.254 --connect-timeout 2 >/dev/null; then
-  echo -e "    eth1:\n      dhcp4: true\n      nameservers:\n        addresses: [8.8.8.8,8.8.4.4]" >> /etc/netplan/01-netcfg.yaml
+  echo -e "    eth1:\n      dhcp4: true\n      nameservers:\n        addresses: [8.8.8.8,8.8.4.4]" >>/etc/netplan/01-netcfg.yaml
   netplan apply
 fi
 sed -i 's/nameserver 127.0.0.53/nameserver 8.8.8.8/g' /etc/resolv.conf && chattr +i /etc/resolv.conf
@@ -44,7 +44,7 @@ modify_motd() {
 }
 
 test_prerequisites() {
-    for package in jq whois build-essential git unzip yq mysql-server redis-server python-pip; do
+  for package in jq whois build-essential git unzip yq mysql-server redis-server python-pip; do
     echo "[$(date +%H:%M:%S)]: [TEST] Validating that $package is correctly installed..."
     # Loop through each package using dpkg
     if ! dpkg -S $package >/dev/null; then
@@ -113,11 +113,10 @@ install_fleet_import_osquery_config() {
     echo "[$(date +%H:%M:%S)]: Fleet is already installed"
   else
     cd /opt || exit 1
-    
+
     echo "[$(date +%H:%M:%S)]: Installing Fleet..."
     echo -e "\n127.0.0.1       kolide" >>/etc/hosts
     echo -e "\n127.0.0.1       logger" >>/etc/hosts
-    
 
     mysql -uroot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'kolide';"
     mysql -uroot -pkolide -e "create database kolide;"
@@ -127,8 +126,7 @@ install_fleet_import_osquery_config() {
     cp fleet/linux/fleetctl /usr/local/bin/fleetctl && chmod +x /usr/local/bin/fleetctl
     cp fleet/linux/fleet /usr/local/bin/fleet && chmod +x /usr/local/bin/fleet
 
-    fleet prepare db --mysql_address=127.0.0.1:3306 --mysql_database=kolide  --mysql_username=root --mysql_password=kolide
-    
+    fleet prepare db --mysql_address=127.0.0.1:3306 --mysql_database=kolide --mysql_username=root --mysql_password=kolide
 
     cp /vagrant/resources/fleet/server.* /opt/fleet/
     cp /vagrant/resources/fleet/fleet.service /etc/systemd/system/fleet.service
@@ -164,7 +162,7 @@ install_fleet_import_osquery_config() {
 
     # Don't log osquery INFO messages
     # Fix snapshot event formatting
-    fleetctl get options > /tmp/options.yaml
+    fleetctl get options >/tmp/options.yaml
     /usr/bin/yq w -i /tmp/options.yaml 'spec.config.options.logger_snapshot_event_type' 'true'
     sed -i 's/kind: option/kind: options/g' /tmp/options.yaml
     fleetctl apply -f /tmp/options.yaml
@@ -281,6 +279,21 @@ install_suricata() {
     echo "Suricata attempted to start but is not running. Exiting"
     exit 1
   fi
+
+  cat >/etc/logrotate.d/suricata <<EOF
+/var/log/suricata/*.log /var/log/suricata/*.json
+{
+    hourly
+    rotate 0
+    missingok
+    nocompress
+    size=500M
+    sharedscripts
+    postrotate
+            /bin/kill -HUP \`cat /var/run/suricata.pid 2>/dev/null\` 2>/dev/null || true
+    endscript
+}
+EOF
 }
 
 test_suricata_prerequisites() {
@@ -320,7 +333,7 @@ install_guacamole() {
   sudo ln -s /etc/guacamole/guacamole.properties /usr/share/tomcat8/.guacamole/
   sudo ln -s /etc/guacamole/user-mapping.xml /usr/share/tomcat8/.guacamole/
   chown tomcat8 /etc/guacamole/user-mapping.xml
-  
+
   systemctl enable guacd
   systemctl enable tomcat8
   systemctl start guacd
