@@ -8,10 +8,11 @@ apt-get -qq install elasticsearch -y # 1st install elasticseatch to get JDK
 export JAVA_HOME=/usr/share/elasticsearch/jdk && echo export JAVA_HOME=/usr/share/elasticsearch/jdk >>/etc/bash.bashrc
 apt-get -qq install kibana filebeat auditbeat elasticsearch-curator -y
 
-(
-  crontab -l 2>/dev/null
-  echo 0 0 \* \* \* curator_cli --host 192.168.38.105 delete_indices --filter_list \'{\"filtertype\": \"age\", \"source\": \"name\", \"timestring\": \"\\%Y.\\%m.\\%d\", \"unit\": \"days\", \"unit_count\": 2, \"direction\": \"older\"}\' \> /tmp/cron.log 2\>\&1
-) | crontab -
+cat >/etc/cron.daily/curator <<EOF
+#!/bin/sh
+curator_cli --host 192.168.38.105 delete_indices --filter_list '{"filtertype": "age", "source": "name", "timestring": "%Y.%m.%d", "unit": "days", "unit_count": 1, "direction": "older"}'  > /dev/null 2>&1
+EOF
+chmod +x /etc/cron.daily/curator
 
 printf vagrant | /usr/share/elasticsearch/bin/elasticsearch-keystore add -x "bootstrap.password" -f
 /usr/share/elasticsearch/bin/elasticsearch-users useradd vagrant -p vagrant -r superuser
