@@ -244,6 +244,43 @@ install_zeek() {
   fi
 }
 
+install_velociraptor() {
+  echo "[$(date +%H:%M:%S)]: Installing Velociraptor..."
+  if [ ! -d "/opt/velociraptor" ]; then
+    mkdir /opt/velociraptor
+  fi
+  echo "[$(date +%H:%M:%S)]: Attempting to determine the URL for the latest release of Velociraptor"
+  LATEST_VELOCIRAPTOR_LINUX_URL=$(curl -sL https://github.com/Velocidex/velociraptor/releases/latest | grep linux-amd64 | grep href | head -1 | cut -d '"' -f 2 | sed 's#^#https://github.com#g')
+  echo "[$(date +%H:%M:%S)]: The URL for the latest release was extracted as $LATEST_VELOCIRAPTOR_LINUX_URL"
+  echo "[$(date +%H:%M:%S)]: Attempting to download..."
+  wget -P /opt/velociraptor --progress=bar:force "$LATEST_VELOCIRAPTOR_LINUX_URL"
+  if [ "$(file /opt/velociraptor/velociraptor*linux-amd64 | grep -c 'ELF 64-bit LSB executable')" -eq 1 ]; then
+    echo "[$(date +%H:%M:%S)]: Velociraptor successfully downloaded!"
+  else
+    echo "[$(date +%H:%M:%S)]: Failed to download the latest version of Velociraptor. Please open a DetectionLab issue on Github."
+    return
+  fi
+
+  cd /opt/velociraptor || exit 1
+  mv velociraptor-*-linux-amd64 velociraptor
+  chmod +x velociraptor
+  cp /vagrant/resources/velociraptor/server.config.yaml /opt/velociraptor
+  echo "[$(date +%H:%M:%S)]: Creating Velociraptor dpkg..."
+  ./velociraptor --config /opt/velociraptor/server.config.yaml debian server
+
+  echo "[$(date +%H:%M:%S)]: Installing the dpkg..."
+  if dpkg -i velociraptor_*_server.deb >/dev/null; then
+    echo "[$(date +%H:%M:%S)]: Installation complete!"
+  else
+    echo "[$(date +%H:%M:%S)]: Failed to install the dpkg"
+    return
+  fi
+
+  echo "[$(date +%H:%M:%S)]: Creating admin user..."
+  sudo -u velociraptor ./velociraptor --config /opt/velociraptor/server.config.yaml user add --role administrator vagrant vagrant
+  rm -rf /opt/velociraptor/users/admin.db /opt/velociraptor/acl/admin.json.db
+}
+
 install_suricata() {
   # Run iwr -Uri testmyids.com -UserAgent "BlackSun" in Powershell to generate test alerts from Windows
   echo "[$(date +%H:%M:%S)]: Installing Suricata..."
@@ -354,6 +391,7 @@ main() {
   fix_eth1_static_ip
   download_palantir_osquery_config
   install_fleet_import_osquery_config
+  install_velociraptor
   install_suricata
   install_zeek
   install_guacamole

@@ -30,6 +30,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 - **Kibana login**: http://192.168.38.105:5601 - vagrant:vagrant
 - **Microsoft ATA login**: https://192.168.38.103 - vagrant:vagrant
 - **Guacamole login**: http://192.168.38.105:8080/guacamole - vagrant:vagrant
+- **Velociraptor**: https://192.168.38.105:9999 - vagrant:vagrant
 
 ## Primary Lab Features:
 
@@ -81,6 +82,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     - Suricata
     - Elastic Beats Forwarder (Forwards Bro logs & Suricata & osquery)
     - Guacamole
+    - Velociraptor
 
 ## Requirements
 
@@ -118,5 +120,6 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 - Navigate to https://192.168.38.105:5601 in a browser to access the Kibana dashboard on logger. Default credentials are vagrant:vagrant.
 - Navigate to https://192.168.38.105:8412 in a browser to access the Fleet server on logger. Default credentials are vagrant:vagrant.
 - Navigate to https://192.168.38.103 in a browser to access Microsoft ATA. Default credentials are vagrant:vagrant.
+- Navigate to https://192.168.38.105:9999 in a browser to access velociraptor. Default credentials are vagrant:vagrant.
 
 **Support**: If you face any problem, please open a new [issue](https://github.com/cyberdefenders/DetectionLabELK/issues) and provide relevant log file.
