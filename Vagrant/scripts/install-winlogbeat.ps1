@@ -67,6 +67,22 @@ winlogbeat.event_logs:
   - name: WEC7-Active-Directory
   - name: WEC7-Privilege-Use
   - name: WEC7-Terminal-Services
+  
+  - name: Windows PowerShell
+    event_id: 400, 403, 600, 800
+    processors:
+      - script:
+          lang: javascript
+          id: powershell
+          file: ${path.home}/module/powershell/config/winlogbeat-powershell.js
+
+  - name: Microsoft-Windows-PowerShell/Operational
+    event_id: 4103, 4104, 4105, 4106
+    processors:
+      - script:
+          lang: javascript
+          id: powershell-operational
+          file: ${path.home}/module/powershell/config/winlogbeat-powershell.js
 
 setup.kibana:
   host: "192.168.38.105:5601"
