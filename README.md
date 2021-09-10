@@ -7,6 +7,15 @@ DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/cl
 This is a fork of cyberdefenders [DetectionLabELK](https://github.com/cyberdefenders/DetectionLabELK) which according to their github 
 repo is no longer maintained as of may 2020.
 
+### Some of the coming soon features are:
+- Default IP address will be a different subnet to allow installation on the same host as DetectionLab.  I like to be able to use both Splunk and ELK.
+- Default Box Names will be a different to allow for installation on same host using the same virtualizaiton software (Virtualbox, VMWare,etc.).
+- Ability to change default hostnames.
+- Ability to change default domain.
+- Ability to change the default IP addresses.
+- Ability to choose between [Olaf Hartong's](https://github.com/olafhartong/sysmon-modular) or [SwiftOnSecurity's](https://github.com/SwiftOnSecurity/sysmon-config) sysmon configuration.  Current default is Olaf Hartong's.
+
+
 ![Maintenance](https://img.shields.io/maintenance/yes/2021.svg?style=flat-square)
 [![GitHub last commit](https://img.shields.io/github/last-commit/cybersheepdog/DetectionLabELK.svg?style=flat-square)](https://github.com/cybersheepdog/DetectionLabELK/commit/master)
 
@@ -104,7 +113,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     - [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
     - [Install Packer](https://packer.io/downloads.html) on your system.
     - Install the Vagrant-Reload plugin by running the following command: `vagrant plugin install vagrant-reload`.
-    - Download DetectionLabELK to your local machine by running `git clone https://github.com/cyberdefenders/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/cyberdefenders/DetectionLabELK/archive/master.zip).
+    - Download DetectionLabELK to your local machine by running `git clone https://github.com/cybersheepdog/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/cybersheepdog/DetectionLabELK/archive/master.zip).
     - `cd` to "DetectionLabELK/Vagrant" and execute `vagrant up`.
 
 2.  **Build Boxes From Scratch - ETA ~5 hours**.
@@ -112,7 +121,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
     - [Install Vagrant](https://www.vagrantup.com/downloads.html) on your system.
     - [Install Packer](https://packer.io/downloads.html) on your system.
     - Install "Vagrant-Reload" plugin by running the following command: `vagrant plugin install vagrant-reload`.
-    - Download DetectionLabELK to your local machine by running `git clone https://github.com/cyberdefenders/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/cyberdefenders/DetectionLabELK/archive/master.zip).
+    - Download DetectionLabELK to your local machine by running `git clone https://github.com/cybersheepdog/DetectionLabELK.git` from command line OR download it directly via [this link](https://github.com/cybersheepdog/DetectionLabELK/archive/master.zip).
     - `cd` to "DetectionLabELK" base directory and build the lab by executing `./build.sh virtualbox` (Mac & Linux) or `./build.ps1 virtualbox` (Windows).
 
 ## Troubleshooting:
@@ -128,4 +137,4 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 - Navigate to https://192.168.38.103 in a browser to access Microsoft ATA. Default credentials are vagrant:vagrant.
 - Navigate to https://192.168.38.105:9999 in a browser to access velociraptor. Default credentials are vagrant:vagrant.
 
-**Support**: If you face any problem, please open a new [issue](https://github.com/cyberdefenders/DetectionLabELK/issues) and provide relevant log file.
+**Support**: If you face any problem, please open a new [issue](https://github.com/cybersheepdog/DetectionLabELK/issues) and provide relevant log file.
