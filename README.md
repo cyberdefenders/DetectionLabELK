@@ -41,12 +41,12 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 ## Primary Lab Features:
 
 - [Microsoft Advanced Threat Analytics](https://www.microsoft.com/en-us/cloud-platform/advanced-threat-analytics) is installed on the WEF machine, with the lightweight ATA gateway installed on the DC
-- Windoes Evenet forwarder along with Winlogbeat are pre-installed and all indexes are pre-created on ELK. Technology add-ons for Windows are also preconfigured.
+- Windows Event forwarder along with Winlogbeat are pre-installed and all indexes are pre-created on ELK. Technology add-ons for Windows are also preconfigured.
 - A custom Windows auditing configuration is set via GPO to include command line process auditing and additional OS-level logging
 - [Palantir's Windows Event Forwarding](http://github.com/palantir/windows-event-forwarding) subscriptions and custom channels are implemented
 - Powershell transcript logging is enabled. All logs are saved to `\\wef\pslogs`
 - osquery comes installed on each host and is pre-configured to connect to a [Fleet](https://kolide.co/fleet) server via TLS. Fleet is preconfigured with the configuration from [Palantir's osquery Configuration](https://github.com/palantir/osquery-configuration)
-- Sysmon is installed and configured using Olaf's open-sourced configuration
+- Sysmon is installed and configured using Olaf's open-sourced configuration.  SwiftOnSecurity's configuration is also available Coming Soon!
 - All autostart items are logged to Windows Event Logs via [AutorunsToWinEventLog](https://github.com/palantir/windows-event-forwarding/tree/master/AutorunsToWinEventLog)
 - SMBv1 Auditing is enabled
 
