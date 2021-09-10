@@ -4,10 +4,16 @@
 
 DetectionLabELK is a fork from Chris Long's [DetectionLab](https://github.com/clong/DetectionLab) with ELK stack instead of Splunk.
 
+This is a fork of cyberdefenders [DetectionLabELK](https://github.com/cyberdefenders/DetectionLabELK) which according to their github 
+repo is no longer maintained as of may 2020.
+
 ![Maintenance](https://img.shields.io/maintenance/yes/2020.svg?style=flat-square)
 [![GitHub last commit](https://img.shields.io/github/last-commit/cyberdefenders/DetectionLabELK.svg?style=flat-square)](https://github.com/cyberdefenders/DetectionLabELK/commit/master)
+
 [![Twitter](https://img.shields.io/twitter/follow/DetectionLab.svg?style=social)](https://twitter.com/DetectionLab)
 [![Twitter](https://img.shields.io/twitter/follow/CyberDefenders?style=social)](https://twitter.com/CyberDefenders)
+[![Twitter](https://img.shields.io/twitter/follow/JeremyWiedner?style=social)](https://twitter.com/JeremyWiedner)
+
 
 ## Description:
 
