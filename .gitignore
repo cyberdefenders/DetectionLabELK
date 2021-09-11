@@ -5,13 +5,3 @@ Packer/packer_build.log
 Packer/output-*
 Boxes/*
 .DS_Store
-Terraform/*/*.tfstate
-Terraform/*/.terraform
-Terraform/*/*.tfvars
-Terraform/*/*.lock.info
-Terraform/*/*.backup
-Terraform/*.tfstate
-Terraform/*.terraform
-Terraform/*.tfvars
-Terraform/*.lock.info
-Terraform/*.backup
