@@ -17,7 +17,7 @@
    running.
 
    If you encounter issues, feel free to open an issue at
-   https://github.com/clong/DetectionLab/issues
+   https://github.com/cybersheepdog/DetectionLabELK/issues
 
 .PARAMETER ProviderName
   The Hypervisor you're using for the lab. Valid options are 'virtualbox' or 'vmware_desktop'
