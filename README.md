@@ -104,7 +104,7 @@ A popular use case for DetectionLabELK is when you consider adopting MITRE ATT&C
 - 55GB+ of free disk space
 - 16GB+ of RAM
 - Vagrant 2.2.2 or newer
-- Virtualbox
+- Virtualbox or VMWare
 
 ## Deployment Options
 
