@@ -5,7 +5,7 @@
 # from the README have already been run followed.
 # Only MacOS and Linux are supported. Use build.ps1 for Windows.
 # If you encounter issues, feel free to open an issue at
-# https://github.com/clong/DetectionLab/issues
+# https://github.com/cybersheepdog/DetectionLabELK/issues
 
 print_usage() {
   echo "Usage: ./build.sh <virtualbox | vmware_desktop>  <--vagrant-only | --packer-only>"
