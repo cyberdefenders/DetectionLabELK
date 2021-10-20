@@ -163,7 +163,7 @@ filebeat --path.config /etc/filebeat modules enable suricata
 # make sure kibana is up and running
 echo "Waiting for Kibana to be up..."
 while true; do
-  result=$(curl -uvagrant:vagrant --silent 192.168.38.105:5601/api/status)
+  result=$(curl -u vagrant:vagrant --silent 192.168.38.105:5601/api/status)
   if echo $result | grep -q logger; then break; fi
   sleep 1
 done
@@ -175,8 +175,8 @@ done
 
 # load SIEM prebuilt rules
 echo "Load SIEM prebuilt rules"
-curl -s -uvagrant:vagrant -XPOST "192.168.38.105:5601/api/detection_engine/index" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
-curl -s -uvagrant:vagrant -XPUT "192.168.38.105:5601/api/detection_engine/rules/prepackaged" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
+curl -s -u vagrant:vagrant -XPOST "192.168.38.105:5601/api/detection_engine/index" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
+curl -s -u vagrant:vagrant -XPUT "192.168.38.105:5601/api/detection_engine/rules/prepackaged" -H 'kbn-xsrf: true' -H 'Content-Type: application/json'
 
 # Enable elasticsearch trial
 # echo "Enable elastic trial version"
