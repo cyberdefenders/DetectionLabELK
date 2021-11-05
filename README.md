@@ -9,7 +9,13 @@ repo is no longer maintained as of may 2020.
 
 ### Some of the coming soon features are:
 - Default IP address will be a different subnet to allow installation on the same host as DetectionLab.  I like to be able to use both Splunk and ELK.
+    - Recent update to [DetectionLab](https://github.com/clong/DetectionLab) changed the default IP's to 192.168.58.X.  Default for this project will be 192.168.42.X.
 - Default Box Names will be a different to allow for installation on same host using the same virtualizaiton software (Virtualbox, VMWare,etc.).
+    - They will be:
+        - loggerelk
+        - dcelk
+        - wefelk
+        - win10elk
 - Ability to change default hostnames.
 - Ability to change default domain.
 - Ability to change the default IP addresses.
