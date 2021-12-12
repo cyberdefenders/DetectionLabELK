@@ -12,6 +12,7 @@ Vagrant.configure("2") do |config|
       v.memory = 4096
       v.cpus = 2
       v.gui = false
+      v.vmx["virtualhw.version"] = 18
     end
 
     cfg.vm.provider "virtualbox" do |vb, override|
